@@ -9,12 +9,16 @@ export default function Signup() {
     const [confirmPassword, setConfirmPassword] = useState('');
     const { onSignup } = useAuth();
 
-    const handleRegister = async () => {
-        if (password !== confirmPassword) {
-            Alert.alert('Error', 'Passwords do not match');
+    const handleSubmit = async () => {
+        if (!email || !password || !confirmPassword) {
+            alert('All fields are required')
             return;
         }
-
+        if (password !== confirmPassword) {
+            alert('Passwords do not match')
+            return;
+        }
+        
         const result = await onSignup!(email, password);
         if (!result?.error) {
             // signup successful
@@ -58,7 +62,7 @@ export default function Signup() {
                 secureTextEntry
             />
             
-            <TouchableOpacity style={styles.button} onPress={handleRegister}>
+            <TouchableOpacity style={styles.button} onPress={handleSubmit}>
                 <Text style={styles.buttonText}>Sign Up</Text>
             </TouchableOpacity>
             
