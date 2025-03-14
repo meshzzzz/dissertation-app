@@ -22,6 +22,8 @@ export default function RootLayout() {
     ...FontAwesome.font,
   });
 
+  const colorScheme = useColorScheme();
+
   // Expo Router uses Error Boundaries to catch errors in the navigation tree.
   useEffect(() => {
     if (error) throw error;
@@ -38,8 +40,10 @@ export default function RootLayout() {
   }
 
   return (
-    <AuthProvider>
-        <Slot />
-    </AuthProvider>
+    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>   
+        <AuthProvider>
+            <Slot />
+        </AuthProvider>
+    </ThemeProvider>
   );
 }

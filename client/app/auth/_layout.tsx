@@ -29,15 +29,9 @@ export default function AuthLayout() {
         }}>
         <Stack.Screen
           name="login"
-          options={{
-            title: 'Sign In',
-          }}
         />
         <Stack.Screen
           name="signup"
-          options={{
-            title: 'Create Account',
-          }}
         />
       </Stack>
     </ThemeProvider>

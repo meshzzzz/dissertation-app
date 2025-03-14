@@ -1,12 +1,14 @@
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
+import { useTheme } from '@react-navigation/native';
 import { router } from 'expo-router';
 
 export default function Login() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const { onLogin } = useAuth();
+    const { colors } = useTheme(); 
 
     const handleLogin = async () => {
         const result = await onLogin!(email, password);
@@ -20,7 +22,7 @@ export default function Login() {
 
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>Login</Text>
+            <Text style={[styles.title, { color: colors.text }]}>Login</Text>
 
             <TextInput
                 style={styles.input}
@@ -38,13 +40,16 @@ export default function Login() {
                 onChangeText={setPassword}
                 secureTextEntry
             />
+            <Text style={[styles.text, { color: colors.text }]}>
+                Forgot Password
+            </Text>
 
             <TouchableOpacity style={styles.button} onPress={handleLogin}>
                 <Text style={styles.buttonText}>Login</Text>
             </TouchableOpacity>
 
             <TouchableOpacity onPress={() => router.push('/auth/signup')}>
-                <Text style={styles.link}>Don't have an account? Sign up</Text>
+                <Text style={styles.link}>Don't have an account yet? Sign up here.</Text>
             </TouchableOpacity>
         </View>
     )
@@ -61,6 +66,11 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         marginBottom: 30,
         textAlign: 'center',
+    },
+    text: {
+        fontWeight: 'semibold',
+        marginBottom: 30,
+        textAlign: 'right',
     },
     input: {
         borderWidth: 1,
