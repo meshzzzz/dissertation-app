@@ -1,4 +1,4 @@
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, NativeSyntheticEvent, TextInputChangeEventData } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, NativeSyntheticEvent, TextInputChangeEventData, ScrollView, KeyboardAvoidingView, Platform, Keyboard, TouchableWithoutFeedback } from 'react-native';
 import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@react-navigation/native';
@@ -15,17 +15,21 @@ export default function Signup() {
     const [password, setPassword] = useState('');
     const [passwordVerify, setPasswordVerify] = useState(false);
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [confirmPasswordVerify, setConfirmPasswordVerify] = useState(false);
 
     const { onSignup } = useAuth();
     const { colors } = useTheme(); 
 
-    function handleFirstName(e: NativeSyntheticEvent<TextInputChangeEventData>) {
-        const firstNameVar = e.nativeEvent.text;
-        setLastName(firstNameVar);
-        if (firstNameVar.length > 1) {
-            setFirstNameVerify(true);
-        }
+    // password must be > 7 characters, contain at least one uppercase letter, lowercase letter, number and special character
+    const validatePassword = (pass: string): boolean => {
+        const hasUpperCase = /[A-Z]/.test(pass);
+        const hasLowerCase = /[a-z]/.test(pass);
+        const hasNumbers = /[0-9]/.test(pass);
+        const hasSpecialChar = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(pass);
+        
+        return pass.length >= 8 && hasUpperCase && hasLowerCase && hasNumbers && hasSpecialChar;
     }
+
 
     const handleSubmit = async () => {
         if (!email || !password || !confirmPassword) {
@@ -52,76 +56,164 @@ export default function Signup() {
     }
 
     return (
-        <View style={styles.container}>
-            <Text style={[styles.title, { color: colors.text }]}>Sign-Up</Text>
-            
-            <View style={styles.inputWrapper}>
-                <TextInput
-                    style={[styles.input, { color: colors.text }]}
-                    placeholder="University Email"
-                    value={email}
-                    onChangeText={setEmail}
-                    autoCapitalize="none"
-                    keyboardType="email-address"
-                />
-            </View>
-        
-            <View style={styles.inputWrapper}>
-                <TextInput
-                    style={[styles.input, { color: colors.text }]}
-                    placeholder="First Name"
-                    onChangeText={(text) => {
-                        setFirstName(text);
-                        setFirstNameVerify(text.length > 1);
-                    }}
-                />
-                {firstName.length > 0 && (
-                    <Feather 
-                        name={firstNameVerify ? "check-circle" : "x-circle"} 
-                        color={firstNameVerify ? "green" : "red"} 
-                        size={20} 
-                        style={styles.icon}
-                    />
-                )}
-            </View>
+        <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            style={{ flex: 1 }}
+        >
+            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                <ScrollView 
+                    contentContainerStyle={{ flexGrow: 1 }}
+                    showsVerticalScrollIndicator={false}
+                    keyboardShouldPersistTaps="handled"
+                >
+                    <View style={styles.container}>
+                        <Text style={[styles.title, { color: colors.text }]}>Sign-Up</Text>
+                        
+                        <View style={styles.inputWrapper}>
+                            <TextInput
+                                style={[styles.input, { color: colors.text }]}
+                                placeholder="University Email"
+                                autoCapitalize="none"
+                                keyboardType="email-address"
+                                value={email}
+                                onChangeText={(text) => {
+                                    setEmail(text);
+                                    setEmailVerify(/^[\w.%+-]+@[\w.-]+\.[a-zA-Z]{1,}$/.test(text));
+                                }}
+                            />
+                            {email.length > 0 && (
+                                <Feather 
+                                    name={emailVerify ? "check-circle" : "x-circle"} 
+                                    color={emailVerify ? "green" : "red"} 
+                                    size={20} 
+                                    style={styles.icon}
+                                />
+                            )}
+                        </View>
+                        {email.length < 1 ? null : emailVerify ? null :
+                        <Text
+                            style={styles.errorText}>
+                            Enter a valid email address.
+                        </Text>}
+                    
+                        <View style={styles.inputWrapper}>
+                            <TextInput
+                                style={[styles.input, { color: colors.text }]}
+                                placeholder="First Name"
+                                onChangeText={(text) => {
+                                    setFirstName(text);
+                                    setFirstNameVerify(text.length > 1);
+                                }}
+                            />
+                            {firstName.length > 0 && (
+                                <Feather 
+                                    name={firstNameVerify ? "check-circle" : "x-circle"} 
+                                    color={firstNameVerify ? "green" : "red"} 
+                                    size={20} 
+                                    style={styles.icon}
+                                />
+                            )}
+                        </View>
+                        {firstName.length < 1 ? null : firstNameVerify ? null :
+                        <Text
+                            style={styles.errorText}>
+                            First name should be more than 1 character.
+                        </Text>}
 
-            <View style={styles.inputWrapper}>
-                <TextInput
-                    style={[styles.input, { color: colors.text }]}
-                    placeholder="Last Name"
-                    value={lastName}
-                    onChangeText={setLastName}
-                />
-            </View>
-            
-            <View style={styles.inputWrapper}>
-                <TextInput
-                    style={[styles.input, { color: colors.text }]}
-                    placeholder="Password"
-                    value={password}
-                    onChangeText={setPassword}
-                    secureTextEntry
-                />
-            </View>
+                        <View style={styles.inputWrapper}>
+                            <TextInput
+                                style={[styles.input, { color: colors.text }]}
+                                placeholder="Last Name"
+                                value={lastName}
+                                onChangeText={(text) => {
+                                    setLastName(text);
+                                    setLastNameVerify(text.length > 1);
+                                }}
+                            />
+                            {lastName.length > 0 && (
+                                <Feather 
+                                    name={lastNameVerify ? "check-circle" : "x-circle"} 
+                                    color={lastNameVerify ? "green" : "red"} 
+                                    size={20} 
+                                    style={styles.icon}
+                                />
+                            )}
+                        </View>
+                        {lastName.length < 1 ? null : lastNameVerify ? null :
+                        <Text
+                            style={styles.errorText}>
+                            Last name should be more than 1 character.
+                        </Text>}
+                        
+                        <View style={styles.inputWrapper}>
+                            <TextInput
+                                style={[styles.input, { color: colors.text }]}
+                                placeholder="Password"
+                                value={password}
+                                onChangeText={(text) => {
+                                    setPassword(text);
+                                    const isValid = validatePassword(text);
+                                    setPasswordVerify(isValid);
 
-            <View style={styles.inputWrapper}>
-                <TextInput
-                    style={[styles.input, { color: colors.text }]}
-                    placeholder="Confirm Password"
-                    value={confirmPassword}
-                    onChangeText={setConfirmPassword}
-                    secureTextEntry
-                />
-            </View>
-            
-            <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-                <Text style={styles.buttonText}>Sign Up</Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity onPress={() => router.push('/auth/login')}>
-                <Text style={styles.link}>Already have an account? Login</Text>
-            </TouchableOpacity>
-        </View>
+                                    if (confirmPassword) {
+                                        setConfirmPasswordVerify(confirmPassword === text && text.length > 0)
+                                    }
+                                }}
+                                secureTextEntry
+                            />
+                            {password.length > 0 && (
+                                <Feather 
+                                    name={passwordVerify ? "check-circle" : "x-circle"} 
+                                    color={passwordVerify ? "green" : "red"} 
+                                    size={20} 
+                                    style={styles.icon}
+                                />
+                            )}
+                        </View>
+                        {password.length < 1 ? null : passwordVerify ? null :
+                        <Text
+                            style={styles.errorText}>
+                            Password must be at least 8 characters and contain at least one uppercase letter, 
+                            lowercase letter, number, and special character.
+                        </Text>}
+
+                        <View style={styles.inputWrapper}>
+                            <TextInput
+                                style={[styles.input, { color: colors.text }]}
+                                placeholder="Confirm Password"
+                                value={confirmPassword}
+                                onChangeText={(text) => {
+                                    setConfirmPassword(text);
+                                    setConfirmPasswordVerify(text === password && text.length > 0);
+                                }}
+                                secureTextEntry
+                            />
+                            {confirmPassword.length > 0 && (
+                                <Feather 
+                                    name={confirmPasswordVerify ? "check-circle" : "x-circle"} 
+                                    color={confirmPasswordVerify ? "green" : "red"} 
+                                    size={20} 
+                                    style={styles.icon}
+                                />
+                            )}
+                        </View>
+                        {confirmPassword.length < 1 ? null : confirmPasswordVerify ? null :
+                        <Text
+                            style={styles.errorText}>
+                            Passwords do not match.
+                        </Text>}
+                        
+                        <TouchableOpacity style={styles.button} onPress={handleSubmit}>
+                            <Text style={styles.buttonText}>Sign Up</Text>
+                        </TouchableOpacity>
+                        
+                        <TouchableOpacity onPress={() => router.push('/auth/login')}>
+                            <Text style={styles.link}>Already have an account? Login</Text>
+                        </TouchableOpacity>
+                    </View>
+                </ScrollView>
+            </TouchableWithoutFeedback>
+        </KeyboardAvoidingView>
     )
 }
 
@@ -136,6 +228,11 @@ const styles = StyleSheet.create({
       fontWeight: 'bold',
       marginBottom: 30,
       textAlign: 'center',
+    },
+    errorText: {
+      color: 'red',
+      marginTop: -10,
+      marginBottom: 10,
     },
     inputWrapper: {
       position: 'relative',
