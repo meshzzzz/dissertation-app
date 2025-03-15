@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@react-navigation/native';
 import { router } from 'expo-router';
+import axios from 'axios';
 import Feather from 'react-native-vector-icons/Feather';
 
 export default function Signup() {
@@ -32,7 +33,7 @@ export default function Signup() {
 
 
     const handleSubmit = async () => {
-        if (!email || !password || !confirmPassword) {
+        if (!email || !password || !confirmPassword || !firstName || !lastName) {
             alert('All fields are required')
             return;
         }
@@ -40,18 +41,33 @@ export default function Signup() {
             alert('Passwords do not match')
             return;
         }
-        
-        const result = await onSignup!(email, password);
-        if (!result?.error) {
-            // signup successful
-            Alert.alert('Success', 'Account created successfully', [
-                {
-                    text: 'OK',
-                    onPress: () => router.replace('/auth/login')
+
+        if (firstNameVerify && lastNameVerify && emailVerify && passwordVerify && confirmPasswordVerify) {
+            try {
+                const response = await axios.post('http://192.168.1.225:5001/signup', {
+                    email,
+                    firstName,
+                    lastName,
+                    password
+                });
+                
+                if (response.data.status === "ok") {
+                    Alert.alert('Success', 'Account created successfully', [
+                        {
+                            text: 'OK',
+                            onPress: () => router.replace('/auth/login')
+                        }
+                    ]);
+                } else {
+                    Alert.alert('Error', response.data.data);
                 }
-            ]);
-        } else {
-            Alert.alert('Error', result.msg);
+            } catch (error) {
+                console.error('Signup error:', error);
+                Alert.alert('Error', 'Something went wrong. Please try again.');
+            }
+        }
+        else {
+            Alert.alert('Error', 'Please fill out all fields correctly.');
         }
     }
 
