@@ -1,4 +1,4 @@
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView, KeyboardAvoidingView, Platform, Keyboard, TouchableWithoutFeedback } from 'react-native';
 import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@react-navigation/native';
@@ -10,7 +10,7 @@ export default function Login() {
     const { onLogin } = useAuth();
     const { colors } = useTheme(); 
 
-    const handleLogin = async () => {
+    const handleSubmit = async () => {
         const result = await onLogin!(email, password);
         if (!result?.error) {
             // login successful
@@ -21,37 +21,54 @@ export default function Login() {
     }
 
     return (
-        <View style={styles.container}>
-            <Text style={[styles.title, { color: colors.text }]}>Login</Text>
+        <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            style={{ flex: 1 }}
+        >
+            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                <ScrollView 
+                    contentContainerStyle={{ flexGrow: 1 }}
+                    showsVerticalScrollIndicator={false}
+                    keyboardShouldPersistTaps="handled"
+                >
+                    <View style={styles.container}>
+                        <Text style={[styles.title, { color: colors.text }]}>Login</Text>
 
-            <TextInput
-                style={styles.input}
-                placeholder="Email"
-                value={email}
-                onChangeText={setEmail}
-                autoCapitalize='none'
-                keyboardType='email-address'
-            />
+                        <View style={styles.inputWrapper}>
+                            <TextInput
+                                style={[styles.input, { color: colors.text }]}
+                                placeholder="Email"
+                                value={email}
+                                onChangeText={setEmail}
+                                autoCapitalize='none'
+                                keyboardType='email-address'
+                            />
+                        </View>
 
-            <TextInput
-                style={styles.input}
-                placeholder="Password"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-            />
-            <Text style={[styles.text, { color: colors.text }]}>
-                Forgot Password
-            </Text>
+                        <View style={styles.inputWrapper}>
+                            <TextInput
+                                style={[styles.input, { color: colors.text }]}
+                                placeholder="Password"
+                                value={password}
+                                onChangeText={setPassword}
+                                secureTextEntry
+                            />
+                        </View>
+                        <Text style={[styles.text, { color: colors.text }]}>
+                            Forgot Password
+                        </Text>
 
-            <TouchableOpacity style={styles.button} onPress={handleLogin}>
-                <Text style={styles.buttonText}>Login</Text>
-            </TouchableOpacity>
+                        <TouchableOpacity style={styles.button} onPress={handleSubmit}>
+                            <Text style={styles.buttonText}>Login</Text>
+                        </TouchableOpacity>
 
-            <TouchableOpacity onPress={() => router.push('/auth/signup')}>
-                <Text style={styles.link}>Don't have an account yet? Sign up here.</Text>
-            </TouchableOpacity>
-        </View>
+                        <TouchableOpacity onPress={() => router.push('/auth/signup')}>
+                            <Text style={styles.link}>Don't have an account yet? Sign up here.</Text>
+                        </TouchableOpacity>
+                    </View>
+                </ScrollView>
+            </TouchableWithoutFeedback>
+        </KeyboardAvoidingView>
     )
 }
 
@@ -66,6 +83,15 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         marginBottom: 30,
         textAlign: 'center',
+    },
+    errorText: {
+        color: 'red',
+        marginTop: -10,
+        marginBottom: 10,
+    },
+    inputWrapper: {
+        position: 'relative',
+        marginBottom: 5,
     },
     text: {
         fontWeight: 'semibold',

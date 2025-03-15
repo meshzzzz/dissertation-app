@@ -3,6 +3,7 @@ const app = express();
 const mongoose = require("mongoose");
 const cors = require('cors');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 app.use(express.json());
 app.use(cors());
 require ('dotenv').config();
@@ -43,6 +44,26 @@ app.post('/signup', async(req, res) => {
         res.send({status:"ok", data: "User created"})
     } catch (error) {
         res.send({status:"error", data: error})
+    }
+})
+
+app.post("/login", async(req, res) => {
+    const {email, password} = req.body;
+    const existingUser = await User.findOne({email: email});
+
+    if (!existingUser) {
+        return res.send({status:"error", data: "User does not exist."})
+    }
+    
+    if (await bcrypt.compare(password, existingUser.password)) {
+        const token = jwt.sign({email: existingUser.email}, process.env.JWT_SECRET);
+
+        if (res.status(201)) {
+            return res.send({status:"ok", data: token})
+        }
+        else {
+            return res.send({status:"error"})
+        }
     }
 })
 
