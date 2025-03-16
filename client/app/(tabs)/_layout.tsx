@@ -53,9 +53,23 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="two"
+        name="groups"
         options={{
-          title: 'Tab Two',
+          title: 'Groups',
+          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="your-uni"
+        options={{
+          title: 'Your University',
+          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: 'Profile',
           tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
         }}
       />
