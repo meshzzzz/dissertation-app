@@ -11,12 +11,22 @@ export default function Login() {
     const { colors } = useTheme(); 
 
     const handleSubmit = async () => {
-        const result = await onLogin!(email, password);
-        if (!result?.error) {
-            // login successful
-            router.replace('/(tabs)')
-        } else {
-            console.log(result.msg)
+        if (!email || !password) {
+            Alert.alert('Error', 'Email and password are required');
+            return;
+        }
+
+        try {
+            const result = await onLogin!(email, password);
+            
+            if (!result?.error) {
+                console.log("Login successful");
+            } else {
+                Alert.alert('Error', result.msg || 'Login failed');
+            }
+        } catch (error) {
+            console.error('Login error:', error);
+            Alert.alert('Error', 'Something went wrong. Please try again.');
         }
     }
 
@@ -29,7 +39,7 @@ export default function Login() {
                 <ScrollView 
                     contentContainerStyle={{ flexGrow: 1 }}
                     showsVerticalScrollIndicator={false}
-                    keyboardShouldPersistTaps="handled"
+                    keyboardShouldPersistTaps={"handled"}
                 >
                     <View style={styles.container}>
                         <Text style={[styles.title, { color: colors.text }]}>Login</Text>

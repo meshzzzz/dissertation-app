@@ -59,7 +59,7 @@ app.post("/login", async(req, res) => {
         const token = jwt.sign({email: existingUser.email}, process.env.JWT_SECRET);
 
         if (res.status(201)) {
-            return res.send({status:"ok", data: token})
+            return res.send({status:"ok", token: token})
         }
         else {
             return res.send({status:"error"})

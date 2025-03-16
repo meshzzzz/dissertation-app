@@ -4,13 +4,13 @@ import * as SecureStore from 'expo-secure-store';
 
 interface AuthProps {
     authState?: { token: string | null; authenticated: boolean | null };
-    onSignup?: (email: string, password: string) => Promise<any>;
+    onSignup?: (email: string, firstName: string, lastName: string, password: string) => Promise<any>;
     onLogin?: (email: string, password: string) => Promise<any>;
     onLogout?: () => Promise<any>;
 }
 
 const TOKEN_KEY = 'my-jwt';
-export const API_URL = 'http://localhost:5001/';
+export const API_URL = 'http://192.168.1.225:5001';
 const AuthContext = createContext<AuthProps>({});
 
 export const useAuth = () => {
@@ -47,18 +47,23 @@ export const AuthProvider = ({children}: any) => {
         loadToken();
     }, [])
 
-    const signup = async (email: string, password: string) => {
+    const signup = async (email: string, firstName: string, lastName: string, password: string) => {
         try {
-            return await axios.post(`${API_URL}/users`, {email, password});
+            const response = await axios.post(`${API_URL}/signup`, {
+                email,
+                firstName,
+                lastName,
+                password
+            });
+            return response;
         } catch (e) {
-            return { error: true, msg: (e as any).response.data.msg}
+            return { error: true, msg: (e as any).response.data.msg || "Signup failed" }
         }
     }
 
     const login = async (email: string, password: string) => {
         try {
-            const result = await axios.post(`${API_URL}/auth`, {email, password});
-            console.log("login result: ", result);
+            const result = await axios.post(`${API_URL}/login`, {email, password});
             setAuthState({
                 token: result.data.token,
                 authenticated: true
@@ -70,7 +75,7 @@ export const AuthProvider = ({children}: any) => {
             return result
 
         } catch (e) {
-            return { error: true, msg: (e as any).response.data.msg}
+            return { error: true, msg: (e as any).response?.data?.data || "Login failed"}
         }
     }
 

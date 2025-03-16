@@ -43,30 +43,19 @@ export default function Signup() {
         }
 
         if (firstNameVerify && lastNameVerify && emailVerify && passwordVerify && confirmPasswordVerify) {
-            try {
-                const response = await axios.post('http://192.168.1.225:5001/signup', {
-                    email,
-                    firstName,
-                    lastName,
-                    password
-                });
-                
-                if (response.data.status === "ok") {
-                    Alert.alert('Success', 'Account created successfully', [
-                        {
-                            text: 'OK',
-                            onPress: () => router.replace('/auth/login')
-                        }
-                    ]);
-                } else {
-                    Alert.alert('Error', response.data.data);
-                }
-            } catch (error) {
-                console.error('Signup error:', error);
-                Alert.alert('Error', 'Something went wrong. Please try again.');
+            const response = await onSignup!(email, firstName, lastName, password);
+            
+            if (!response.error && response.data?.status === "ok") {
+                Alert.alert('Success', 'Account created successfully', [
+                    {
+                        text: 'OK',
+                        onPress: () => router.replace('/auth/login')
+                    }
+                ]);
+            } else {
+                Alert.alert('Error', response.msg || response.data?.data || 'Signup failed');
             }
-        }
-        else {
+        } else {
             Alert.alert('Error', 'Please fill out all fields correctly.');
         }
     }
