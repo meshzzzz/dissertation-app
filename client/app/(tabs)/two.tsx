@@ -1,9 +1,31 @@
 import { StyleSheet } from 'react-native';
-
 import EditScreenInfo from '@/components/EditScreenInfo';
 import { Text, View } from '@/components/Themed';
+import { useEffect, useState } from 'react';
+import { API_URL, useAuth } from '@/context/AuthContext';
+import axios from 'axios';
 
 export default function TabTwoScreen() {
+    const { authState } = useAuth();
+    const [userData, setUserData] = useState('');
+
+    async function getData() {
+        if (authState?.token) {
+            try {
+              const response = await axios.post(`${API_URL}/userdata`, {
+                token: authState.token
+              });
+              console.log(response.data);
+            } catch (error) {
+              console.error("Error fetching user data:", error);
+            }
+          }
+    }
+
+    useEffect(() => {
+        getData();
+    }, [authState]);
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Tab Two</Text>

@@ -9,7 +9,7 @@ export default function AuthLayout() {
   const { authState } = useAuth();
   const colorScheme = useColorScheme();
 
-  // If the user is authenticated, redirect to the main app
+  // if the user is authenticated, redirect to the main app
   if (authState?.authenticated) {
     return <Redirect href="/(tabs)" />;
   }

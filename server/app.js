@@ -67,6 +67,22 @@ app.post("/login", async(req, res) => {
     }
 })
 
+app.post("/userdata", async(req, res) => {
+    const {token} = req.body;
+    try {
+        const user = jwt.verify(token, process.env.JWT_SECRET);
+        const userEmail = user.email;
+
+        User.findOne({email:userEmail}).then((data) => {
+            return res.send({status:"ok", data: data});
+        }).catch(err => {
+            return res.send({status:"error", data: "User not found"});
+        })
+    } catch (error) {
+        return res.send({status:"error", data: "Invalid token"});
+    }
+});
+
 app.listen(5001, () => {
     console.log("Node js server started.")
 })
