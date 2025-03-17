@@ -10,6 +10,9 @@ client/dist/
 client/web-build/
 client/expo-env.d.ts
 
+# build files
+client/ios/
+
 # Native
 *.orig.*
 *.jks
@@ -36,5 +39,5 @@ yarn-error.*
 # typescript
 *.tsbuildinfo
 
-# environment vareiables
+# environment variables
 .env
