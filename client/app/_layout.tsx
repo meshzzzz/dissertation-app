@@ -9,6 +9,7 @@ import { useColorScheme } from '@/components/useColorScheme';
 import { AuthProvider } from '@/context/AuthContext';
 import { View, ActivityIndicator } from 'react-native';
 import "../global.css";
+import Colors from "@/constants/Colors";
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -26,6 +27,34 @@ export default function RootLayout() {
 
   const colorScheme = useColorScheme();
 
+  const CustomLightTheme = {
+    ...DefaultTheme,
+    colors: {
+      ...DefaultTheme.colors,
+      primary: Colors.light.tint,
+      accent: Colors.light.accent,
+      background: Colors.light.background,
+      card: Colors.light.background,
+      text: Colors.light.text,
+      border: Colors.light.tabIconDefault,
+      notification: Colors.light.tint,
+    },
+  };
+  
+  const CustomDarkTheme = {
+    ...DarkTheme,
+    colors: {
+      ...DarkTheme.colors,
+      primary: Colors.dark.tint,
+      accent: Colors.dark.accent,
+      background: Colors.dark.background,
+      card: Colors.dark.background,
+      text: Colors.dark.text,
+      border: Colors.dark.tabIconDefault,
+      notification: Colors.dark.tint,
+    },
+  };
+
   // Expo Router uses Error Boundaries to catch errors in the navigation tree.
   useEffect(() => {
     if (error) throw error;
@@ -42,7 +71,7 @@ export default function RootLayout() {
   }
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>   
+    <ThemeProvider value={colorScheme === 'dark' ? CustomDarkTheme : CustomLightTheme}>   
         <AuthProvider>
             <Slot />
         </AuthProvider>

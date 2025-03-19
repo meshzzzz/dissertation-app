@@ -31,6 +31,7 @@ export default function CustomDrawerContent(props: any) {
                 backgroundColor: colors.card,
             }}
             >
+                
                 <DrawerItemList {...props} />
                 <DrawerItem 
                     label={"Logout"} 

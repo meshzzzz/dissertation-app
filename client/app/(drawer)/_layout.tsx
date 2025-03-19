@@ -10,17 +10,17 @@ export default function DrawerLayout() {
     return (
         <GestureHandlerRootView style={{ flex: 1 }}>
             <Drawer 
-                drawerContent={CustomDrawerContent} 
+                drawerContent={(props) => <CustomDrawerContent {...props} />} 
                 screenOptions={{
                     drawerHideStatusBarOnOpen: true,
                     drawerActiveBackgroundColor: colors.card,
                     drawerActiveTintColor: colors.primary,
+                    headerShown: false,
                 }}>
                 <Drawer.Screen 
                     name='(tabs)' 
                     options={{
                         drawerLabel: 'Home',
-                        headerTitle: 'Home',
                         drawerIcon: ({ size, color}) => (
                             <Ionicons name='home' size={size} color={color} /> 
                         )
@@ -31,6 +31,7 @@ export default function DrawerLayout() {
                     options={{
                         drawerLabel: 'Settings',
                         headerTitle: 'Settings',
+                        headerShown: true,
                         drawerIcon: ({ size, color}) => (
                             <Ionicons name='settings' size={size} color={color} /> 
                         )
