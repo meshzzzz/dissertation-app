@@ -7,6 +7,8 @@ import React, { useEffect, useState } from 'react';
 import { API_URL, useAuth } from '@/context/AuthContext';
 import axios from 'axios';
 import { FontAwesome, Ionicons, MaterialIcons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
+import UploadModal from '@/components/UploadModal';
 
 interface Post {
     id: number;
@@ -20,10 +22,14 @@ export default function ProfileScreen() {
     const { authState } = useAuth();
     const { colors } = useTheme();
     const colorScheme = useColorScheme();
-    const accentColor = Colors[colorScheme ?? 'light'].accent;
-    const tintColor = Colors[colorScheme ?? 'light'].tint;
-    const middleBgColor = '#ABC5DD';
-    const bottomBgColor = '#6092C0';
+    const accentColor = Colors[colorScheme ?? 'light'].secondary;
+    const tintColor = Colors[colorScheme ?? 'light'].primary;
+    const middleBgColor = Colors[colorScheme ?? 'light'].profile.middleBackground;
+    const bottomBgColor = Colors[colorScheme ?? 'light'].profile.bottomBackground;
+    const pinboardColor = Colors[colorScheme ?? 'light'].profile.pinboard;
+    const [modalVisible, setModalVisible] = useState(false);
+const [uploadLoading, setUploadLoading] = useState(false);
+const [profileImage, setProfileImage] = useState({ uri: "https://placekitten.com/300/300" });
     const [userData, setUserData] = useState<{
         name: string;
         program: string;
@@ -82,6 +88,71 @@ export default function ProfileScreen() {
         getData();
     }, [authState]);
 
+    const handleCameraUpload = async () => {
+        try {
+            setUploadLoading(true);
+            
+            const { status } = await ImagePicker.requestCameraPermissionsAsync();
+            if (status !== 'granted') {
+                alert('Camera permission is required');
+                setUploadLoading(false);
+                return;
+            }
+            
+            const result = await ImagePicker.launchCameraAsync({
+                allowsEditing: true,
+                aspect: [1, 1],
+                quality: 0.7,
+            });
+            
+            if (!result.canceled) {
+                setProfileImage({ uri: result.assets[0].uri });
+                // You can add code to upload to your server here
+            }
+        } catch (error) {
+            console.error('Error taking photo:', error);
+        } finally {
+            setUploadLoading(false);
+            setModalVisible(false);
+        }
+    };
+    
+    const handleGalleryUpload = async () => {
+        try {
+            setUploadLoading(true);
+            
+            const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+            if (status !== 'granted') {
+                alert('Gallery permission is required');
+                setUploadLoading(false);
+                return;
+            }
+            
+            const result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                allowsEditing: true,
+                aspect: [1, 1],
+                quality: 0.7,
+            });
+            
+            if (!result.canceled) {
+                setProfileImage({ uri: result.assets[0].uri });
+                // You can add code to upload to your server here
+            }
+        } catch (error) {
+            console.error('Error selecting photo:', error);
+        } finally {
+            setUploadLoading(false);
+            setModalVisible(false);
+        }
+    };
+    
+    const handleRemoveImage = () => {
+        // Reset to default image
+        setProfileImage({ uri: "https://placekitten.com/300/300" });
+        setModalVisible(false);
+    };
+
     return (
         <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }}>
             <ScrollView className="flex-1">
@@ -113,7 +184,7 @@ export default function ProfileScreen() {
                                 elevation: 3 
                             }}>
                             <Image
-                                source={{ uri: "https://placekitten.com/300/300" }}
+                                source={profileImage}
                                 className="w-44 h-44 rounded-full"
                             />
                         </View>
@@ -126,7 +197,8 @@ export default function ProfileScreen() {
                                 shadowOpacity: 0.2,
                                 shadowRadius: 3,
                                 elevation: 3 
-                            }}>
+                            }}
+                            onPress={() => setModalVisible(true)}>
                             <Ionicons name="pencil" size={22} color={colors.primary} />
                         </TouchableOpacity>
                     </View>
@@ -137,9 +209,15 @@ export default function ProfileScreen() {
 
                     {/* about me pin-board */}
                     <View className="w-4/5 rounded-3xl p-5 mb-8"
-                            style={{ backgroundColor: '#E8C99B' }}>
-                        <Text className="text-lg font-bold mb-2">About me</Text>
-                        <Text className="text-base mb-4">{userData.aboutMe}</Text>
+                            style={{ backgroundColor: pinboardColor }}>
+                        <Text className="text-lg font-bold mb-2"
+                              style={{ color: colorScheme === 'dark' ? '#FFF' : '#000' }}>
+                            About me
+                        </Text>
+                        <Text className="text-base mb-4"
+                              style={{ color: colorScheme === 'dark' ? '#EEE' : '#000' }}>
+                            {userData.aboutMe}
+                        </Text>
 
                         {/* location info */}
                         <View className="flex-row justify-around mt-2">
@@ -197,6 +275,16 @@ export default function ProfileScreen() {
                     </View>
                 </View>
             </ScrollView>
+
+            <UploadModal 
+                modalVisible={modalVisible}
+                onBackPress={() => setModalVisible(false)}
+                onCameraPress={handleCameraUpload}
+                onGalleryPress={handleGalleryUpload}
+                onRemovePress={handleRemoveImage}
+                isLoading={uploadLoading}
+                hasExistingImage={profileImage.uri !== "https://placekitten.com/300/300"}
+            />
         </SafeAreaView>
     );
 }

@@ -1,23 +1,42 @@
-const tintColorLight = '#00529C';
-const tintColorDark = '#00529C';
-const accentColorLight = '#FF69B4';
-const accentColorDark = '#FF69B4';
+const primaryColorLight = '#00529C';
+const primaryColorDark = '#003060';
+const secondaryColorLight = '#DC80B1';
+const secondaryColorDark = '#5b1140';
+const primaryContainerLight = '#d5e3ff';
+const primaryContainerDark = '#004688';
+const secondaryContainerLight = '#ffd8e9';
+const secondaryContainerDark = '#772958';
+
+const profileColors = {
+    light: {
+        middleBackground: '#ABC5DD',
+        bottomBackground: '#6092C0',
+        pinboard: '#E8C99B',
+      },
+    dark: {
+        middleBackground: '#1E3A5F',
+        bottomBackground: '#0E2A4F',
+        pinboard: '#806039',
+    }
+}
 
 export default {
   light: {
     text: '#000',
     background: '#fff',
-    tint: tintColorLight,
-    accent: accentColorLight,
+    primary: primaryColorLight,
+    secondary: secondaryColorLight,
     tabIconDefault: '#ccc',
-    tabIconSelected: tintColorLight,
+    tabIconSelected: primaryColorLight,
+    profile: profileColors.light,
   },
   dark: {
     text: '#fff',
     background: '#000',
-    tint: tintColorDark,
-    accent: accentColorDark,
+    primary: primaryColorDark,
+    secondary: secondaryColorDark,
     tabIconDefault: '#ccc',
-    tabIconSelected: tintColorDark,
+    tabIconSelected: primaryColorDark,
+    profile: profileColors.dark,
   },
 };

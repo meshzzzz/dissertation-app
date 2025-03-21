@@ -31,13 +31,14 @@ export default function RootLayout() {
     ...DefaultTheme,
     colors: {
       ...DefaultTheme.colors,
-      primary: Colors.light.tint,
-      accent: Colors.light.accent,
+      primary: Colors.light.primary,
+      accent: Colors.light.secondary,
       background: Colors.light.background,
       card: Colors.light.background,
       text: Colors.light.text,
       border: Colors.light.tabIconDefault,
-      notification: Colors.light.tint,
+      notification: Colors.light.primary,
+      profile: Colors.light.profile,
     },
   };
   
@@ -45,13 +46,14 @@ export default function RootLayout() {
     ...DarkTheme,
     colors: {
       ...DarkTheme.colors,
-      primary: Colors.dark.tint,
-      accent: Colors.dark.accent,
+      primary: Colors.dark.primary,
+      accent: Colors.dark.secondary,
       background: Colors.dark.background,
       card: Colors.dark.background,
       text: Colors.dark.text,
       border: Colors.dark.tabIconDefault,
-      notification: Colors.dark.tint,
+      notification: Colors.dark.primary,
+      profile: Colors.dark.profile,
     },
   };
 

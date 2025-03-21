@@ -25,11 +25,18 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].primary,
         tabBarShowLabel: false,
         headerLeft: () => <DrawerToggleButton />,
         headerShown: true,
-
+        headerShadowVisible: false,
+        tabBarStyle: {
+            borderTopWidth: 0,
+            paddingHorizontal: 35,
+        },
+        tabBarItemStyle: {
+            paddingTop: 10,
+        }
       }}>
       <Tabs.Screen
         name="index"
