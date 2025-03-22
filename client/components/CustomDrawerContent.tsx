@@ -38,10 +38,10 @@ export default function CustomDrawerContent(props: any) {
                     onPress={handleLogout}
                     labelStyle={{color: colors.text}} 
                 />
-                <View className="my-2 items-center">
-                    <ThemeToggle />
-                </View>
             </DrawerContentScrollView>
+            <View className="absolute bottom-0 pb-10 items-center">
+                <ThemeToggle />
+            </View>
         </View>
     )
 }

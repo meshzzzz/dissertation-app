@@ -1,60 +1,57 @@
-import React from 'react';
-import { TouchableOpacity, View } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useColorScheme } from 'react-native';
 import { useTheme } from '@react-navigation/native';
 import { Appearance } from 'react-native';
+import Toggle from './Toggle';
 
 const ThemeToggle = () => {
   const colorScheme = useColorScheme();
   const { colors } = useTheme();
-  const isDark = colorScheme === 'dark';
-  const primaryColor = isDark ? colors.primary : colors.primary;
-  const backgroundColor = isDark ? '#2a2e37' : '#f0f0f0'; 
-  const toggleBackgroundColor = isDark ? '#1a1d24' : '#ffffff'; 
+  const [isDark, setIsDark] = useState(colorScheme === 'dark');
+  const primaryColor = colors.primary;
+  
+  useEffect(() => {
+    setIsDark(colorScheme === 'dark');
+  }, [colorScheme]);
   
   const toggleTheme = () => {
-    Appearance.setColorScheme(isDark ? 'light' : 'dark');
+    const newTheme = isDark ? 'light' : 'dark';
+    Appearance.setColorScheme(newTheme);
+    setIsDark(!isDark);
   };
 
   return (
-    <View className="px-5 py-2 w-full">
-      <TouchableOpacity
-        onPress={toggleTheme}
-        className="relative w-16 h-8 rounded-full flex-row items-center justify-between overflow-hidden"
-        style={{ backgroundColor: backgroundColor }}
-      >
-        <View 
-          className={`absolute left-1.5 z-10 ${!isDark ? 'opacity-100' : 'opacity-40'}`}
-        >
+    <View style={styles.container}>
+      <Toggle
+        isActive={isDark}
+        onToggle={toggleTheme}
+        leftIcon={
           <Ionicons
             name="sunny"
             size={15}
             color={!isDark ? primaryColor : '#ffffff'}
           />
-        </View>
-        
-        <View 
-          className={`absolute right-1.5 z-10 ${isDark ? 'opacity-100' : 'opacity-40'}`}
-        >
+        }
+        rightIcon={
           <Ionicons
             name="moon"
             size={15}
             color={isDark ? primaryColor : '#aaaaaa'}
           />
-        </View>
-        
-        <View
-          className={`absolute h-6 w-6 rounded-full ${
-            isDark ? 'right-1' : 'left-1'
-          }`}
-          style={{ 
-            backgroundColor: toggleBackgroundColor,
-          }}
-        />
-      </TouchableOpacity>
+        }
+      />
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    width: '100%'
+  }
+});
 
 export default ThemeToggle;
