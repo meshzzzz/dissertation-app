@@ -1,5 +1,4 @@
 import { Text as DefaultText, View as DefaultView } from 'react-native';
-
 import Colors from '@/constants/Colors';
 import { useColorScheme } from './useColorScheme';
 
@@ -33,6 +32,11 @@ export function Text(props: TextProps) {
 }
 
 export function View(props: ViewProps) {
-  const { style, lightColor, darkColor, ...otherProps } = props;
-  return <DefaultView style={style} {...otherProps} />;
+  const { style, lightColor, darkColor, ...otherProps } = props
+  const themedBackground = lightColor || darkColor
+    ? { backgroundColor: useThemeColor({ light: lightColor, dark: darkColor }, 'background') }
+    : {};
+
+  return <DefaultView style={[themedBackground, style]} {...otherProps} />;
 }
+
