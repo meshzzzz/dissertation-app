@@ -1,8 +1,12 @@
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView, KeyboardAvoidingView, Platform, Keyboard, TouchableWithoutFeedback } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@react-navigation/native';
 import { router } from 'expo-router';
+import { AuthContainer } from '@/components/auth/AuthContainer';
+import { AuthButton } from '@/components/auth/AuthButton';
+import { FormContainer } from '@/components/auth/FormContainer';
+import { AuthInput } from '@/components/auth/AuthInput';
 
 export default function Login() {
     const [email, setEmail] = useState('');
@@ -31,103 +35,71 @@ export default function Login() {
     }
 
     return (
-        <KeyboardAvoidingView
-            behavior={Platform.OS === "ios" ? "padding" : "height"}
-            style={{ flex: 1 }}
-        >
-            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-                <ScrollView 
-                    contentContainerStyle={{ flexGrow: 1 }}
-                    showsVerticalScrollIndicator={false}
-                    keyboardShouldPersistTaps={"handled"}
-                >
-                    <View style={styles.container}>
-                        <Text style={[styles.title, { color: colors.text }]}>Login</Text>
+        <AuthContainer>
+            <FormContainer title="Login">
+                <Text style={styles.formTitle}>Please login to your account.</Text>
+                <AuthInput
+                    placeholder="Email"
+                    value={email}
+                    onChangeText={setEmail}
+                    icon="user"
+                    autoCapitalize='none'
+                    keyboardType='email-address'
+                />
 
-                        <View style={styles.inputWrapper}>
-                            <TextInput
-                                style={[styles.input, { color: colors.text }]}
-                                placeholder="Email"
-                                value={email}
-                                onChangeText={setEmail}
-                                autoCapitalize='none'
-                                keyboardType='email-address'
-                            />
-                        </View>
+                <AuthInput
+                    placeholder="Password"
+                    value={password}
+                    onChangeText={setPassword}
+                    icon="lock"
+                    secureTextEntry
+                />
 
-                        <View style={styles.inputWrapper}>
-                            <TextInput
-                                style={[styles.input, { color: colors.text }]}
-                                placeholder="Password"
-                                value={password}
-                                onChangeText={setPassword}
-                                secureTextEntry
-                            />
-                        </View>
-                        <Text style={[styles.text, { color: colors.text }]}>
-                            Forgot Password
-                        </Text>
+                <TouchableOpacity style={styles.forgotPasswordContainer}>
+                    <Text style={styles.forgotPassword}>Forgot Password?</Text>
+                </TouchableOpacity>
 
-                        <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-                            <Text style={styles.buttonText}>Login</Text>
-                        </TouchableOpacity>
+                <AuthButton onPress={handleSubmit} title="Login" />
+            </FormContainer>
 
-                        <TouchableOpacity onPress={() => router.push('/auth/signup')}>
-                            <Text style={styles.link}>Don't have an account yet? Sign up here.</Text>
-                        </TouchableOpacity>
-                    </View>
-                </ScrollView>
-            </TouchableWithoutFeedback>
-        </KeyboardAvoidingView>
+            <View style={styles.signupContainer}>
+                <Text style={styles.signupText}>Don't have an account yet? </Text>
+                <TouchableOpacity onPress={() => router.push('/auth/signup')}>
+                    <Text style={styles.signupLink}>Sign-up here.</Text>
+                </TouchableOpacity>
+            </View>
+        </AuthContainer>
     )
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
+    formTitle: {
+        fontSize: 16,
+        marginTop: 30,
+        marginBottom: 20,
+        color: '#555',
+    },
+    forgotPasswordContainer: {
+        alignSelf: 'flex-end',
+        marginTop: 5,
+    },
+    forgotPassword: {
+        fontSize: 14,
+        color: '#666',
+    },
+    signupContainer: {
+        flexDirection: 'row',
         justifyContent: 'center',
-        padding: 20,
+        alignItems: 'center',
+        marginTop: 20,
     },
-    title: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        marginBottom: 30,
-        textAlign: 'center',
+    signupText: {
+        fontSize: 14,
+        color: '#555',
     },
-    errorText: {
-        color: 'red',
-        marginTop: -10,
-        marginBottom: 10,
-    },
-    inputWrapper: {
-        position: 'relative',
-        marginBottom: 5,
-    },
-    text: {
-        fontWeight: 'semibold',
-        marginBottom: 30,
-        textAlign: 'right',
-    },
-    input: {
-        borderWidth: 1,
-        borderColor: '#ddd',
-        padding: 15,
-        marginBottom: 15,
-        borderRadius: 5,
-    },
-    button: {
-        backgroundColor: '#007AFF',
-        padding: 15,
-        borderRadius: 5,
-        marginBottom: 15,
-    },
-    buttonText: {
-        color: 'white',
-        textAlign: 'center',
+    signupLink: {
+        fontSize: 14,
+        color: '#D67BAF',
         fontWeight: 'bold',
     },
-    link: {
-        color: '#007AFF',
-        textAlign: 'center',
-    },
-})
+});

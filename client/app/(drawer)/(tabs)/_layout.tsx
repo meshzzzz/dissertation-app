@@ -46,7 +46,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="groups"
+        name="groups/index"
         options={{
           title: 'Groups',
           tabBarIcon: ({ color }) => <TabBarIcon name="people-outline" color={color} />,
@@ -65,6 +65,12 @@ export default function TabLayout() {
           title: 'My Profile',
           tabBarIcon: ({ color }) => <TabBarIcon name="person-outline" color={color} />,
         }}
+      />
+      <Tabs.Screen
+        name="groups/[id]"
+        options={{
+            title: 'Group',
+            href:null,}}
       />
     </Tabs>
   );

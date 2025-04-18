@@ -1,274 +1,204 @@
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView, KeyboardAvoidingView, Platform, Keyboard, TouchableWithoutFeedback } from 'react-native';
-import { useState } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { useReducer } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { useTheme } from '@react-navigation/native';
 import { router } from 'expo-router';
-import axios from 'axios';
-import Feather from 'react-native-vector-icons/Feather';
+import { AuthContainer } from '@/components/auth/AuthContainer';
+import { AuthButton } from '@/components/auth/AuthButton';
+import { FormContainer } from '@/components/auth/FormContainer';
+import { AuthInput } from '@/components/auth/AuthInput';
+
+type FormFields = {
+    email: string;
+    firstName: string;
+    lastName: string;
+    preferredName: string;
+    password: string;
+    confirmPassword: string;
+};
+  
+type ValidationFlags = {
+    [K in keyof FormFields]: boolean;
+};
+
+const initialForm: FormFields = {
+    email: '',
+    firstName: '',
+    lastName: '',
+    preferredName: '',
+    password: '',
+    confirmPassword: '',
+};
+
+const initialValidation: ValidationFlags = {
+    email: false,
+    firstName: false,
+    lastName: false,
+    preferredName: false,
+    password: false,
+    confirmPassword: false,
+};
+
+function formReducer(state: FormFields, action: { field: keyof FormFields; value: string }) {
+    return { ...state, [action.field]: action.value };
+}
+  
+function validationReducer(state: ValidationFlags, action: { field: keyof ValidationFlags; value: boolean }) {
+    return { ...state, [action.field]: action.value };
+}
+
+const validators: { [K in keyof FormFields]?: (value: string, form?: FormFields) => boolean } = {
+    email: (val) => /^[\w.%+-]+@[\w.-]+\.[a-zA-Z]{1,}$/.test(val),
+    firstName: (val) => val.length > 1,
+    lastName: (val) => val.length > 1,
+    preferredName: (val) => val.length > 1,
+    password: (val) => /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/.test(val),
+    confirmPassword: (val, form) => val === form?.password && val.length > 0,
+  };
 
 export default function Signup() {
-    const [email, setEmail] = useState('');
-    const [emailVerify, setEmailVerify] = useState(false);
-    const [firstName, setFirstName] = useState('');
-    const [firstNameVerify, setFirstNameVerify] = useState(false);
-    const [lastName, setLastName] = useState('');
-    const [lastNameVerify, setLastNameVerify] = useState(false);
-    const [password, setPassword] = useState('');
-    const [passwordVerify, setPasswordVerify] = useState(false);
-    const [confirmPassword, setConfirmPassword] = useState('');
-    const [confirmPasswordVerify, setConfirmPasswordVerify] = useState(false);
-
     const { onSignup } = useAuth();
-    const { colors } = useTheme(); 
 
-    // password must be > 7 characters, contain at least one uppercase letter, lowercase letter, number and special character
-    const validatePassword = (pass: string): boolean => {
-        const hasUpperCase = /[A-Z]/.test(pass);
-        const hasLowerCase = /[a-z]/.test(pass);
-        const hasNumbers = /[0-9]/.test(pass);
-        const hasSpecialChar = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(pass);
-        
-        return pass.length >= 8 && hasUpperCase && hasLowerCase && hasNumbers && hasSpecialChar;
-    }
+    const [form, dispatchForm] = useReducer(formReducer, initialForm);
+    const [valid, dispatchValid] = useReducer(validationReducer, initialValidation);
+
+    const handleChange = (field: keyof FormFields, value: string) => {
+        dispatchForm({ field, value });
+    
+        const validate = validators[field];
+        if (validate) {
+          const isValid = validate(value, { ...form, [field]: value });
+          dispatchValid({ field, value: isValid });
+        }
+    };
+    
 
 
     const handleSubmit = async () => {
-        if (!email || !password || !confirmPassword || !firstName || !lastName) {
-            alert('All fields are required')
-            return;
+        const allValid = Object.values(valid).every(Boolean);
+    
+        if (!allValid) {
+          Alert.alert('Error', 'Please fill out all fields correctly.');
+          return;
         }
-        if (password !== confirmPassword) {
-            alert('Passwords do not match')
-            return;
-        }
-
-        if (firstNameVerify && lastNameVerify && emailVerify && passwordVerify && confirmPasswordVerify) {
-            const response = await onSignup!(email, firstName, lastName, password);
-            
-            if (!response.error && response.data?.status === "ok") {
-                Alert.alert('Success', 'Account created successfully', [
-                    {
-                        text: 'OK',
-                        onPress: () => router.replace('/auth/login')
-                    }
-                ]);
-            } else {
-                Alert.alert('Error', response.msg || response.data?.data || 'Signup failed');
-            }
+    
+        const response = await onSignup!(
+          form.email,
+          form.firstName,
+          form.lastName,
+          form.password
+        );
+    
+        if (!response.error && response.data?.status === 'ok') {
+          Alert.alert('Success', 'Account created successfully', [
+            { text: 'OK', onPress: () => router.replace('/auth/login') },
+          ]);
         } else {
-            Alert.alert('Error', 'Please fill out all fields correctly.');
+          Alert.alert('Error', response.msg || response.data?.data || 'Signup failed');
         }
-    }
+    };
 
     return (
-        <KeyboardAvoidingView
-            behavior={Platform.OS === "ios" ? "padding" : "height"}
-            style={{ flex: 1 }}
-        >
-            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-                <ScrollView 
-                    contentContainerStyle={{ flexGrow: 1 }}
-                    showsVerticalScrollIndicator={false}
-                    keyboardShouldPersistTaps="handled"
-                >
-                    <View style={styles.container}>
-                        <Text style={[styles.title, { color: colors.text }]}>Sign-Up</Text>
-                        
-                        <View style={styles.inputWrapper}>
-                            <TextInput
-                                style={[styles.input, { color: colors.text }]}
-                                placeholder="University Email"
-                                autoCapitalize="none"
-                                keyboardType="email-address"
-                                value={email}
-                                onChangeText={(text) => {
-                                    setEmail(text);
-                                    setEmailVerify(/^[\w.%+-]+@[\w.-]+\.[a-zA-Z]{1,}$/.test(text));
-                                }}
-                            />
-                            {email.length > 0 && (
-                                <Feather 
-                                    name={emailVerify ? "check-circle" : "x-circle"} 
-                                    color={emailVerify ? "green" : "red"} 
-                                    size={20} 
-                                    style={styles.icon}
-                                />
-                            )}
-                        </View>
-                        {email.length < 1 ? null : emailVerify ? null :
-                        <Text
-                            style={styles.errorText}>
-                            Enter a valid email address.
-                        </Text>}
-                    
-                        <View style={styles.inputWrapper}>
-                            <TextInput
-                                style={[styles.input, { color: colors.text }]}
-                                placeholder="First Name"
-                                onChangeText={(text) => {
-                                    setFirstName(text);
-                                    setFirstNameVerify(text.length > 1);
-                                }}
-                            />
-                            {firstName.length > 0 && (
-                                <Feather 
-                                    name={firstNameVerify ? "check-circle" : "x-circle"} 
-                                    color={firstNameVerify ? "green" : "red"} 
-                                    size={20} 
-                                    style={styles.icon}
-                                />
-                            )}
-                        </View>
-                        {firstName.length < 1 ? null : firstNameVerify ? null :
-                        <Text
-                            style={styles.errorText}>
-                            First name should be more than 1 character.
-                        </Text>}
+        <AuthContainer>
+            <FormContainer title="Sign Up">
+                <Text style={styles.formTitle}>My Info</Text>
+                <AuthInput
+                    placeholder="University Email"
+                    value={form.email}
+                    onChangeText={(text) => handleChange('email', text)}
+                    keyboardType="email-address"
+                    showValidation
+                    isValid={valid.email}
+                    errorMessage="Enter a valid email address."
+                />
 
-                        <View style={styles.inputWrapper}>
-                            <TextInput
-                                style={[styles.input, { color: colors.text }]}
-                                placeholder="Last Name"
-                                value={lastName}
-                                onChangeText={(text) => {
-                                    setLastName(text);
-                                    setLastNameVerify(text.length > 1);
-                                }}
-                            />
-                            {lastName.length > 0 && (
-                                <Feather 
-                                    name={lastNameVerify ? "check-circle" : "x-circle"} 
-                                    color={lastNameVerify ? "green" : "red"} 
-                                    size={20} 
-                                    style={styles.icon}
-                                />
-                            )}
-                        </View>
-                        {lastName.length < 1 ? null : lastNameVerify ? null :
-                        <Text
-                            style={styles.errorText}>
-                            Last name should be more than 1 character.
-                        </Text>}
-                        
-                        <View style={styles.inputWrapper}>
-                            <TextInput
-                                style={[styles.input, { color: colors.text }]}
-                                placeholder="Password"
-                                value={password}
-                                onChangeText={(text) => {
-                                    setPassword(text);
-                                    const isValid = validatePassword(text);
-                                    setPasswordVerify(isValid);
+                <AuthInput
+                    placeholder="First Name"
+                    value={form.firstName}
+                    onChangeText={(text) => handleChange('firstName', text)}
+                    showValidation
+                    isValid={valid.firstName}
+                    errorMessage="First name should be more than 1 character."
+                />
 
-                                    if (confirmPassword) {
-                                        setConfirmPasswordVerify(confirmPassword === text && text.length > 0)
-                                    }
-                                }}
-                                secureTextEntry
-                            />
-                            {password.length > 0 && (
-                                <Feather 
-                                    name={passwordVerify ? "check-circle" : "x-circle"} 
-                                    color={passwordVerify ? "green" : "red"} 
-                                    size={20} 
-                                    style={styles.icon}
-                                />
-                            )}
-                        </View>
-                        {password.length < 1 ? null : passwordVerify ? null :
-                        <Text
-                            style={styles.errorText}>
-                            Password must be at least 8 characters and contain at least one uppercase letter, 
-                            lowercase letter, number, and special character.
-                        </Text>}
+                <AuthInput
+                    placeholder="Last Name"
+                    value={form.lastName}
+                    onChangeText={(text) => handleChange('lastName', text)}
+                    showValidation
+                    isValid={valid.lastName}
+                    errorMessage='Last name should be more than 1 character.'
+                />
 
-                        <View style={styles.inputWrapper}>
-                            <TextInput
-                                style={[styles.input, { color: colors.text }]}
-                                placeholder="Confirm Password"
-                                value={confirmPassword}
-                                onChangeText={(text) => {
-                                    setConfirmPassword(text);
-                                    setConfirmPasswordVerify(text === password && text.length > 0);
-                                }}
-                                secureTextEntry
-                            />
-                            {confirmPassword.length > 0 && (
-                                <Feather 
-                                    name={confirmPasswordVerify ? "check-circle" : "x-circle"} 
-                                    color={confirmPasswordVerify ? "green" : "red"} 
-                                    size={20} 
-                                    style={styles.icon}
-                                />
-                            )}
-                        </View>
-                        {confirmPassword.length < 1 ? null : confirmPasswordVerify ? null :
-                        <Text
-                            style={styles.errorText}>
-                            Passwords do not match.
-                        </Text>}
-                        
-                        <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-                            <Text style={styles.buttonText}>Sign Up</Text>
-                        </TouchableOpacity>
-                        
-                        <TouchableOpacity onPress={() => router.push('/auth/login')}>
-                            <Text style={styles.link}>Already have an account? Login</Text>
-                        </TouchableOpacity>
-                    </View>
-                </ScrollView>
-            </TouchableWithoutFeedback>
-        </KeyboardAvoidingView>
+                <AuthInput
+                    placeholder="Preferred Name"
+                    value={form.preferredName}
+                    onChangeText={(text) => handleChange('preferredName', text)}
+                    showValidation
+                    isValid={valid.preferredName}
+                    errorMessage="Preferred name should be more than 1 character."
+                />
+                <Text style={styles.helperText}>This is what will be displayed on your profile</Text>
+
+                <AuthInput
+                    placeholder="Password"
+                    value={form.password}
+                    onChangeText={(text) => handleChange('password', text)}
+                    showValidation
+                    isValid={valid.password}
+                    secureTextEntry
+                    errorMessage='Password must be at least 8 characters and contain at least one uppercase letter, 
+                                  lowercase letter, number, and special character.'
+                />
+
+                <AuthInput
+                    placeholder="Confirm Password"
+                    value={form.confirmPassword}
+                    onChangeText={(text) => handleChange('confirmPassword', text)}
+                    showValidation
+                    isValid={valid.confirmPassword}
+                    secureTextEntry
+                    errorMessage='Passwords do not match.'
+                />
+                
+                <AuthButton onPress={handleSubmit} title="Next" />
+            </FormContainer>
+            <View style={styles.loginContainer}>
+                <Text style={styles.loginText}>Already have an account? </Text>
+                <TouchableOpacity onPress={() => router.push('/auth/login')}>
+                    <Text style={styles.loginLink}>Login here.</Text>
+                </TouchableOpacity>
+            </View>
+        </AuthContainer>
     )
 }
 
 const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      justifyContent: 'center',
-      padding: 20,
+    formTitle: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        marginBottom: 20,
+        color: '#555',
     },
-    title: {
-      fontSize: 24,
-      fontWeight: 'bold',
-      marginBottom: 30,
-      textAlign: 'center',
+    helperText: {
+        fontSize: 12,
+        color: '#666',
+        alignSelf: 'flex-start',
+        marginTop: -8,
+        marginBottom: 16,
     },
-    errorText: {
-      color: 'red',
-      marginTop: -10,
-      marginBottom: 10,
+    loginContainer: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginTop: 20,
     },
-    inputWrapper: {
-      position: 'relative',
-      marginBottom: 5,
+    loginText: {
+        fontSize: 14,
+        color: '#555',
     },
-    input: {
-      borderWidth: 1,
-      borderColor: '#ddd',
-      padding: 15,
-      marginBottom: 15,
-      borderRadius: 5,
-      paddingRight: 40,
+    loginLink: {
+        fontSize: 14,
+        color: '#D67BAF',
+        fontWeight: 'bold',
     },
-    icon: {
-      position: 'absolute',
-      right: 15,
-      top: 15,
-    },
-    button: {
-      backgroundColor: '#007AFF',
-      padding: 15,
-      borderRadius: 5,
-      marginBottom: 15,
-    },
-    buttonText: {
-      color: 'white',
-      textAlign: 'center',
-      fontWeight: 'bold',
-    },
-    link: {
-      color: '#007AFF',
-      textAlign: 'center',
-    },
-  });
+});
