@@ -61,9 +61,27 @@ export default function ProfileScreen() {
                 token: authState.token
               });
               console.log(response.data);
+
+                let yearOfStudy = "";
+                if (response.data?.data?.yearOfEntry) {
+                    const entryYear = parseInt(response.data.data.yearOfEntry);
+                    const currentYear = new Date().getFullYear();
+                    const yearsStudying = currentYear - entryYear;
+                    
+                    // Create ordinal suffix (1st, 2nd, 3rd, 4th, etc.)
+                    let suffix = "th";
+                    if (yearsStudying === 1) suffix = "st";
+                    else if (yearsStudying === 2) suffix = "nd";
+                    else if (yearsStudying === 3) suffix = "rd";
+                    
+                    yearOfStudy = `${yearsStudying}${suffix} Year `;
+                }
+
               setUserData({
-                name: response.data?.name || 'Robert Pattinson',
-                program: response.data?.program || '2nd Year Biology BSc',
+                name: response.data?.data?.preferredName || 'Robert Pattinson',
+                 program: response.data?.data?.courseOfStudy 
+                    ? `${yearOfStudy}${response.data.data.courseOfStudy}`
+                    : '2nd Year Biology BSc',
                 aboutMe: response.data?.aboutMe || "Hi I'm Rob, looking for friends who like Biology, baking & walking.",
                 location: {
                   country: response.data?.country || 'UK',
@@ -155,165 +173,149 @@ export default function ProfileScreen() {
 
     return (
         <SafeAreaView style={[styles.container,{ backgroundColor: colors.background }]}>
-            <ScrollView style={styles.container}>
-                <View style={styles.contentContainer}>
-                    {/* background sections - scroll with content */}
-                    {/* middle light blue section (from middle of profile pic to posts section) */}
-                    <DefaultView 
-                        style={[
-                            styles.middleBackground, 
-                            { backgroundColor: middleBgColor, zIndex: -2 }]} 
-                    />
-                    
-                    {/* bottom darker blue section (posts section) */}
-                    <DefaultView 
-                        style={[
-                            styles.bottomBackground, 
-                            { backgroundColor: bottomBgColor, zIndex: -2 }]} 
-                    />
+            <View style={styles.contentContainer}>
+                {/* background sections - scroll with content */}
+                {/* middle light blue section (from middle of profile pic to posts section) */}
+                <DefaultView 
+                    style={[
+                        styles.middleBackground, 
+                        { backgroundColor: middleBgColor, zIndex: -2 }]} 
+                />
+                
+                {/* bottom darker blue section (posts section) */}
+                <DefaultView 
+                    style={[
+                        styles.bottomBackground, 
+                        { backgroundColor: bottomBgColor, zIndex: -2 }]} 
+                />
 
-                    <TouchableOpacity 
-                        style={[
-                            styles.editButton,
-                            { 
-                                backgroundColor: colors.background,
-                                shadowColor: '#000',
-                                shadowOffset: { width: 0, height: 2 },
-                                shadowOpacity: 0.2,
-                                shadowRadius: 3,
-                                elevation: 3 
-                            }
-                        ]}
-                        onPress={() => setModalVisible(true)}>
-                        <Ionicons name="pencil" size={22} color={colors.primary} />
-                    </TouchableOpacity>
-    
-                    {/* profile picture */}
-                    <View style={styles.profilePictureContainer}>
-                        <View style={[
-                            styles.profilePictureFrame,
-                            { 
-                                borderWidth: 6, 
-                                borderColor: accentColor,
-                                backgroundColor: colors.background ,
-                                shadowColor: '#000',
-                                shadowOffset: { width: 0, height: 2 },
-                                shadowOpacity: 0.2,
-                                shadowRadius: 3,
-                                elevation: 3 
-                            }
-                        ]}>
-                            <Image
-                                source={profileImage}
-                                style={styles.profilePicture}
-                            />
-                        </View>
-                    </View>
+                <TouchableOpacity 
+                    style={styles.editButton}
+                    onPress={() => setModalVisible(true)}>
+                    <Ionicons name="pencil" size={24} color={'#578BBB'} />
+                </TouchableOpacity>
 
-                    {/* user info */}
-                    <Text style={styles.userName}>{userData.name}</Text>
-                    <Text style={styles.userProgram}>{userData.program}</Text>
-
-                    {/* about me pin-board */}
+                {/* profile picture */}
+                <View style={styles.profilePictureContainer}>
                     <View style={[
-                        styles.pinboard,
-                        { backgroundColor: pinboardColor}
-                        ]}>
-                        
-                         {/* pinboard corner dots */}
-                        <View style={[
-                            styles.cornerDot,
-                            styles.topLeftDot,
-                            { backgroundColor: '#C19259' }
-                        ]} />
-                        
-                        <View style={[
-                            styles.cornerDot,
-                            styles.topRightDot,
-                            { backgroundColor: '#C19259' }
-                        ]} />
-                        
-                        <View style={[
-                            styles.cornerDot,
-                            styles.bottomLeftDot,
-                            { backgroundColor: '#C19259' }
-                        ]} />
-                        
-                        <View style={[
-                            styles.cornerDot,
-                            styles.bottomRightDot,
-                            { backgroundColor: '#C19259' }
-                        ]} />
-                        
-                        <View style={styles.pinboardContent}>
-                            <Text style={[
-                                styles.pinboardTitle,
-                                { color: colorScheme === 'dark' ? '#FFF' : '#000' }]}>
-                                About me
-                            </Text>
-                            <Text style={[
-                                styles.pinboardText,
-                                { color: colorScheme === 'dark' ? '#EEE' : '#000' }]}>
-                                {userData.aboutMe}
-                            </Text>
-
-                            {/* location info */}
-                            <View style={styles.locationContainer}>
-                                {userData.location.country && (
-                                    <View style={styles.locationItem}>
-                                    <FontAwesome name="flag" size={14} color="#333" />
-                                    <Text style={styles.locationText}>{userData.location.country}</Text>
-                                    </View>
-                                )}
-                                
-                                {userData.location.campus && (
-                                    <View style={styles.locationItem}>
-                                    <FontAwesome name="university" size={14} color="#333" />
-                                    <Text style={styles.locationText}>{userData.location.campus}</Text>
-                                    </View>
-                                )}
-                                
-                                {userData.location.accomodation && (
-                                    <View style={styles.locationItem}>
-                                    <MaterialIcons name="apartment" size={14} color="#333" />
-                                    <Text style={styles.locationText}>{userData.location.accomodation}</Text>
-                                    </View>
-                                )}
-                            </View>
-                        </View>
-                    </View>
-
-                    {/* posts section */}
-                    <View style={styles.postsSection}>
-                        <Text style={styles.postsSectionTitle}>My posts</Text>
-                        <ScrollView 
-                            horizontal={true}
-                            showsHorizontalScrollIndicator={false}
-                            contentContainerStyle={{ paddingRight: 20 }}
-                            style={styles.postsScrollView}
-                        >
-                            {userData.posts.map((post, index) => (
-                                <TouchableOpacity 
-                                    key={post.id} 
-                                    style={[
-                                        styles.postCard,
-                                        { backgroundColor: colors.background }
-                                    ]}>
-                                    <View style={{ backgroundColor: 'transparent' }}>
-                                        <Text style={styles.postTitle}>{post.title}</Text>
-                                        <Text style={styles.postDate}>{post.date} • {post.time}</Text>
-                                    </View>
-                                    <View style={[
-                                        styles.postTag,
-                                        { backgroundColor: accentColor }]}>
-                                        <Text style={styles.postTagText}>{post.tag}</Text>
-                                    </View>
-                                </TouchableOpacity>
-                            ))}
-                        </ScrollView>
+                        styles.profilePictureFrame,
+                        { 
+                            borderWidth: 6, 
+                            borderColor: accentColor,
+                            backgroundColor: colors.background ,
+                            shadowColor: '#000',
+                            shadowOffset: { width: 0, height: 2 },
+                            shadowOpacity: 0.2,
+                            shadowRadius: 3,
+                            elevation: 3 
+                        }
+                    ]}>
+                        <Image
+                            source={profileImage}
+                            style={styles.profilePicture}
+                        />
                     </View>
                 </View>
-            </ScrollView>
+
+                {/* user info */}
+                <Text style={styles.userName}>{userData.name}</Text>
+                <Text style={styles.userProgram}>{userData.program}</Text>
+
+                {/* about me pin-board */}
+                <View style={[
+                    styles.pinboard,
+                    { backgroundColor: pinboardColor}
+                    ]}>
+                    
+                        {/* pinboard corner dots */}
+                    <View style={[
+                        styles.cornerDot,
+                        styles.topLeftDot,
+                    ]} />
+                    
+                    <View style={[
+                        styles.cornerDot,
+                        styles.topRightDot,
+                    ]} />
+                    
+                    <View style={[
+                        styles.cornerDot,
+                        styles.bottomLeftDot,
+                    ]} />
+                    
+                    <View style={[
+                        styles.cornerDot,
+                        styles.bottomRightDot,
+                    ]} />
+                    
+                    <View style={styles.pinboardContent}>
+                        <Text style={[
+                            styles.pinboardTitle,
+                            { color: colorScheme === 'dark' ? '#FFF' : '#000' }]}>
+                            About me
+                        </Text>
+                        <Text style={[
+                            styles.pinboardText,
+                            { color: colorScheme === 'dark' ? '#EEE' : '#000' }]}>
+                            {userData.aboutMe}
+                        </Text>
+
+                        {/* location info */}
+                        <View style={styles.locationContainer}>
+                            {userData.location.country && (
+                                <View style={styles.locationItem}>
+                                <FontAwesome name="flag" size={14} color="#333" />
+                                <Text style={styles.locationText}>{userData.location.country}</Text>
+                                </View>
+                            )}
+                            
+                            {userData.location.campus && (
+                                <View style={styles.locationItem}>
+                                <FontAwesome name="university" size={14} color="#333" />
+                                <Text style={styles.locationText}>{userData.location.campus}</Text>
+                                </View>
+                            )}
+                            
+                            {userData.location.accomodation && (
+                                <View style={styles.locationItem}>
+                                <MaterialIcons name="apartment" size={14} color="#333" />
+                                <Text style={styles.locationText}>{userData.location.accomodation}</Text>
+                                </View>
+                            )}
+                        </View>
+                    </View>
+                </View>
+
+                {/* posts section */}
+                <View style={styles.postsSection}>
+                    <Text style={styles.postsSectionTitle}>My posts</Text>
+                    <ScrollView 
+                        horizontal={true}
+                        showsHorizontalScrollIndicator={false}
+                        contentContainerStyle={{ paddingRight: 20 }}
+                        style={styles.postsScrollView}
+                    >
+                        {userData.posts.map((post, index) => (
+                            <TouchableOpacity 
+                                key={post.id} 
+                                style={[
+                                    styles.postCard,
+                                    { backgroundColor: colors.background }
+                                ]}>
+                                <View style={{ backgroundColor: 'transparent' }}>
+                                    <Text style={styles.postTitle}>{post.title}</Text>
+                                    <Text style={styles.postDate}>{post.date} • {post.time}</Text>
+                                </View>
+                                <View style={[
+                                    styles.postTag,
+                                    { backgroundColor: accentColor }]}>
+                                    <Text style={styles.postTagText}>{post.tag}</Text>
+                                </View>
+                            </TouchableOpacity>
+                        ))}
+                    </ScrollView>
+                </View>
+            </View>
 
             <UploadModal 
                 modalVisible={modalVisible}
@@ -339,22 +341,22 @@ const styles = StyleSheet.create({
     },
     middleBackground: {
         position: 'absolute',
-        top: 125,
+        top: 110,
         left: 0,
         right: 0,
-        height: 385,
+        height: 370,
     },
     bottomBackground: {
         position: 'absolute',
-        top: 510,
+        top: 480,
         left: 0,
         right: 0,
-        bottom: 0,
+        bottom: 20,
     },
     editButton: {
         position: 'absolute',
-        top: 150,
-        right: 20,
+        top: 120,
+        right: 10,
         width: 40,
         height: 40,
         borderRadius: 20,
@@ -363,36 +365,36 @@ const styles = StyleSheet.create({
         zIndex: 10,
     },
     profilePictureContainer: {
-        marginTop: 20,
+        marginTop: 15,
         marginBottom: 16,
     },
     profilePictureFrame: {
-        width: 208,
-        height: 208,
-        borderRadius: 104,
+        width: 190,
+        height: 190,
+        borderRadius: 100,
         borderWidth: 6,
         justifyContent: 'center',
         alignItems: 'center',
     },
     profilePicture: {
-        width: 176,
-        height: 176,
+        width: 194,
+        height: 194,
         borderRadius: 88,
     },
     userName: {
-        fontSize: 28,
+        fontSize: 24,
         fontWeight: 'bold',
         marginBottom: 4,
     },
     userProgram: {
-        fontSize: 18,
+        fontSize: 15,
         marginBottom: 20,
     },
     pinboard: {
         position: 'relative',
-        borderRadius: 24,
+        borderRadius: 15,
         padding: 20,
-        marginBottom: 32,
+        marginBottom: 20,
         width: '90%',
         alignSelf: 'center',
     },
@@ -401,6 +403,7 @@ const styles = StyleSheet.create({
         height: 12,
         width: 12,
         borderRadius: 6,
+        backgroundColor: '#C19259'
     },
     topLeftDot: {
         top: 15,
@@ -423,61 +426,59 @@ const styles = StyleSheet.create({
         marginVertical: 10,
     },
     pinboardTitle: {
-        fontSize: 14,
+        fontSize: 12,
         fontWeight: 'bold',
-        marginBottom: 8,
+        marginBottom: 6,
+        marginTop: 4,
     },
     pinboardText: {
-        fontSize: 14,
-        marginBottom: 16,
+        fontSize: 12,
+        marginBottom: 15,
+        lineHeight: 22,
     },
     locationContainer: {
         flexDirection: 'row',
-        justifyContent: 'space-around',
-        marginTop: 8,
+        justifyContent: 'space-between',
     },
     locationItem: {
         flexDirection: 'row',
         alignItems: 'center',
+        marginBottom: 10
     },
     locationText: {
         marginLeft: 4,
-        fontSize: 14,
+        fontSize: 12,
     },
     postsSection: {
         width: '100%',
-        paddingHorizontal: 20,
-        paddingTop: 24,
-        paddingBottom: 32,
+        paddingLeft: 20,
     },
     postsSectionTitle: {
-        fontSize: 24,
+        fontSize: 15,
         fontWeight: 'bold',
-        marginBottom: 24,
+        marginBottom: 16,
+        marginTop: 16,
         alignSelf: 'flex-start',
         color: '#fff',
     },
     postsScrollView: {
         width: '100%',
     },
-    postsScrollContainer: {
-        paddingRight: 20,
-    },
     postCard: {
         marginRight: 16,
         borderRadius: 12,
-        padding: 16,
-        minHeight: 180,
-        width: 220,
+        padding: 14,
+        height: 125,
+        width: 125,
         flexDirection: 'column',
         justifyContent: 'space-between',
     },
     postTitle: {
-        fontSize: 18,
+        fontSize: 16,
         fontWeight: 'bold',
     },
     postDate: {
-        fontSize: 12,
+        fontSize: 10,
         color: '#888',
         marginTop: 8,
     },
@@ -486,10 +487,10 @@ const styles = StyleSheet.create({
         paddingHorizontal: 12,
         paddingVertical: 4,
         alignSelf: 'flex-start',
-        marginTop: 16,
+        marginTop: 18,
     },
     postTagText: {
-        fontSize: 12,
+        fontSize: 10,
         color: '#fff',
     },
 })
