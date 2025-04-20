@@ -1,32 +1,58 @@
-import { TouchableOpacity, Text, StyleSheet } from 'react-native';
-import React from 'react';
+import { TouchableOpacity, Text, StyleSheet, ActivityIndicator, ViewStyle, TextStyle } from 'react-native';
 
 type AuthButtonProps = {
-  onPress: () => void;
-  title: string;
+    onPress: () => void;
+    title: string;
+    isLoading?: boolean;
+    disabled?: boolean;
+    style?: ViewStyle;
+    textStyle?: TextStyle;
 };
 
-export function AuthButton({ onPress, title }: AuthButtonProps) {
-  return (
-    <TouchableOpacity style={styles.button} onPress={onPress}>
-      <Text style={styles.buttonText}>{title}</Text>
-    </TouchableOpacity>
-  );
-}
+export const AuthButton: React.FC<AuthButtonProps> = ({
+    onPress,
+    title,
+    isLoading = false,
+    disabled = false,
+    style,
+    textStyle,
+}) => {
+    return (
+        <TouchableOpacity
+            style={[
+                styles.button,
+                disabled && styles.disabledButton,
+                style
+            ]}
+            onPress={onPress}
+            disabled={disabled || isLoading}
+        >
+            {isLoading ? (
+                <ActivityIndicator color="#fff" />
+            ) : (
+                <Text style={[styles.buttonText, textStyle]}>{title}</Text>
+            )}
+        </TouchableOpacity>
+    );
+};
 
 const styles = StyleSheet.create({
-  button: {
-    backgroundColor: '#D67BAF',
-    padding: 15,
-    borderRadius: 10,
-    marginTop: 45,
-    marginBottom: 15,
-    width: '100%',
-  },
-  buttonText: {
-    color: 'white',
-    textAlign: 'center',
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
+    button: {
+        backgroundColor: '#D67BAF',
+        borderRadius: 10,
+        paddingVertical: 12,
+        paddingHorizontal: 20,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginVertical: 10,
+        width: '100%',
+    },
+    buttonText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: 'bold',
+    },
+    disabledButton: {
+        backgroundColor: '#D67BAF80',
+    },
 });

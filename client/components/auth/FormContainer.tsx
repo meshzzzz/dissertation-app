@@ -3,27 +3,27 @@ import React, { ReactNode } from 'react';
 import { Image } from 'react-native';
 
 type FormContainerProps = {
-  children: ReactNode;
-  title: string;
+    children: ReactNode;
+    title: string;
 };
 
 export function FormContainer({ children, title }: FormContainerProps) {
-  return (
-    <View style={styles.container}>
-        <View style={styles.formContainer}>
-            {children}
-        </View>
+    return (
+        <View style={styles.container}>
+            <View style={styles.formContainer}>
+                {children}
+            </View>
 
-        <View style={styles.headerContainer}>
-            <View style={styles.glowWrapper}>
-                <Image source={require('../../assets/auth/authHeaderCircle.png')} style={styles.glowPng}/>
-                <View style={styles.textWrapper}>
-                    <Text style={styles.headerText}>{title}</Text>
+            <View style={styles.headerContainer}>
+                <View style={styles.glowWrapper}>
+                    <Image source={require('../../assets/auth/authHeaderCircle.png')} style={styles.glowPng}/>
+                    <View style={styles.textWrapper}>
+                        <Text style={styles.headerText}>{title}</Text>
+                    </View>
                 </View>
             </View>
         </View>
-    </View>
-  );
+    );
 }
 
 const styles = StyleSheet.create({

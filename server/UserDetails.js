@@ -14,9 +14,29 @@ const UserSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    preferredName: {
+        type: String,
+        default: '' // optional field
+    },
     password: {
         type: String,
         required: true
+    },
+    courseOfStudy: {
+        type: String,
+        required: true
+    },
+    yearOfEntry: {
+        type: String,
+        required: true
+    },
+    yearOfGraduation: {
+        type: String,
+        required: true
+    },
+    interests: {
+        type: [String],
+        default: []  // optional field
     },
     createdAt: {
         type: Date,

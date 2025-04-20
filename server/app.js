@@ -24,12 +24,22 @@ app.get("/", (req, res) => {
 })
 
 app.post('/signup', async(req, res) => {
-    const {email, firstName, lastName, password} = req.body;
+    const {
+        email, 
+        firstName, 
+        lastName,
+        preferredName, 
+        password,
+        courseOfStudy,
+        yearOfEntry,
+        yearOfGraduation,
+        interests
+    } = req.body;
 
     const existingUser = await User.findOne({email: email})
 
     if(existingUser) {
-        return res.send({data: "User already exists."});
+        return res.send({status: "error", data: "User already exists."});
     }
 
     const encryptedPassword = await bcrypt.hash(password, 12);
@@ -39,7 +49,12 @@ app.post('/signup', async(req, res) => {
             email, 
             firstName, 
             lastName, 
+            preferredName,
             password: encryptedPassword,
+            courseOfStudy,
+            yearOfEntry,
+            yearOfGraduation,
+            interests
         });
         res.send({status:"ok", data: "User created"})
     } catch (error) {
