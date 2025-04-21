@@ -34,9 +34,25 @@ const UserSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    aboutMe: {
+        type: String,
+        default: ''
+    },
+    country: {
+        type: String,
+        default: ''
+    },
+    campus: {
+        type: String,
+        default: ''
+    },
+    accomodation: {
+        type: String,
+        default: ''
+    },
     interests: {
         type: [String],
-        default: []  // optional field
+        default: []  
     },
     createdAt: {
         type: Date,

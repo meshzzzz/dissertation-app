@@ -8,7 +8,8 @@ import { API_URL, useAuth } from '@/context/AuthContext';
 import axios from 'axios';
 import { FontAwesome, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
-import UploadModal from '@/components/UploadModal';
+import UploadModal from '@/components/profile/UploadModal';
+import EditProfileModal from '@/components/profile/EditProfileModal';
 
 interface Post {
     id: number;
@@ -18,7 +19,7 @@ interface Post {
     tag: string;
   }
 
-export default function ProfileScreen() {
+export default function Profile() {
     const { authState } = useAuth();
     const { colors } = useTheme();
     const colorScheme = useColorScheme();
@@ -27,14 +28,15 @@ export default function ProfileScreen() {
     const middleBgColor = Colors[colorScheme ?? 'light'].profile.middleBackground;
     const bottomBgColor = Colors[colorScheme ?? 'light'].profile.bottomBackground;
     const pinboardColor = Colors[colorScheme ?? 'light'].profile.pinboard;
-    const [modalVisible, setModalVisible] = useState(false);
+    const [pfpModalVisible, setPfpModalVisible] = useState(false);
+    const [editModalVisible, setEditModalVisible] = useState(false);
     const [uploadLoading, setUploadLoading] = useState(false);
     const [profileImage, setProfileImage] = useState({ uri: "https://placekitten.com/300/300" });
     const [userData, setUserData] = useState<{
         name: string;
         program: string;
         aboutMe: string;
-        location: {
+        widgets: {
           country: string;
           campus: string;
           accomodation: string;
@@ -44,7 +46,7 @@ export default function ProfileScreen() {
         name: 'Loading...',
         program: '',
         aboutMe: '',
-        location: {
+        widgets: {
           country: '',
           campus: '',
           accomodation: ''
@@ -57,10 +59,10 @@ export default function ProfileScreen() {
         if (authState?.token) {
             setLoading(true);
             try {
-              const response = await axios.post(`${API_URL}/userdata`, {
-                token: authState.token
-              });
-              console.log(response.data);
+                const response = await axios.post(`${API_URL}/userdata`, {
+                    token: authState.token
+                });
+                console.log(response.data);
 
                 let yearOfStudy = "";
                 if (response.data?.data?.yearOfEntry) {
@@ -77,34 +79,38 @@ export default function ProfileScreen() {
                     yearOfStudy = `${yearsStudying}${suffix} Year `;
                 }
 
-              setUserData({
-                name: response.data?.data?.preferredName || 'Robert Pattinson',
-                 program: response.data?.data?.courseOfStudy 
-                    ? `${yearOfStudy}${response.data.data.courseOfStudy}`
-                    : '2nd Year Biology BSc',
-                aboutMe: response.data?.aboutMe || "Hi I'm Rob, looking for friends who like Biology, baking & walking.",
-                location: {
-                  country: response.data?.country || 'UK',
-                  campus: response.data?.campus || 'Mile End',
-                  accomodation: response.data?.residence || 'Maurice Court'
-                },
-                posts: response.data?.posts || [
-                  { id: 1, title: 'Skeleton Cats?', date: '1st Jan', time: '3am', tag: 'Mile End' },
-                  { id: 2, title: 'Kikuo concert...', date: '7th Feb', time: '2:43pm', tag: 'Vocaloid' },
-                  { id: 3, title: 'Do I look like the guy...', date: '23rd Mar', time: '11pm', tag: 'Film' }
-                ]
-              });
+                setUserData({
+                    name: response.data?.data?.preferredName || 'Robert Pattinson',
+                    program: response.data?.data?.courseOfStudy 
+                        ? `${yearOfStudy}${response.data.data.courseOfStudy}`
+                        : '2nd Year Biology BSc',
+                    aboutMe: response.data?.data?.aboutMe || "Hi I'm Rob, looking for friends who like Biology, baking & walking.",
+                    widgets: {
+                        country: response.data?.data?.country || 'UK',
+                        campus: response.data?.data?.campus || 'Mile End',
+                        accomodation: response.data?.data?.accomodation || 'Maurice Court'
+                    },
+                    posts: response.data?.posts || [
+                        { id: 1, title: 'Skeleton Cats?', date: '1st Jan', time: '3am', tag: 'Mile End' },
+                        { id: 2, title: 'Kikuo concert...', date: '7th Feb', time: '2:43pm', tag: 'Vocaloid' },
+                        { id: 3, title: 'Do I look like the guy...', date: '23rd Mar', time: '11pm', tag: 'Film' }
+                    ]
+                });
             } catch (error) {
-              console.error("Error fetching user data:", error);
+                console.error("Error fetching user data:", error);
             } finally {
                 setLoading(false);
             }
-          }
+        }
     }
 
     useEffect(() => {
         getData();
     }, [authState]);
+
+    const handleProfileUpdate = () => {
+        getData(); // refresh profile data
+    }
 
     const handleCameraUpload = async () => {
         try {
@@ -131,7 +137,7 @@ export default function ProfileScreen() {
             console.error('Error taking photo:', error);
         } finally {
             setUploadLoading(false);
-            setModalVisible(false);
+            setPfpModalVisible(false);
         }
     };
     
@@ -161,14 +167,14 @@ export default function ProfileScreen() {
             console.error('Error selecting photo:', error);
         } finally {
             setUploadLoading(false);
-            setModalVisible(false);
+            setPfpModalVisible(false);
         }
     };
     
     const handleRemoveImage = () => {
         // reset to default image
         setProfileImage({ uri: "https://placekitten.com/300/300" });
-        setModalVisible(false);
+        setPfpModalVisible(false);
     };
 
     return (
@@ -191,7 +197,7 @@ export default function ProfileScreen() {
 
                 <TouchableOpacity 
                     style={styles.editButton}
-                    onPress={() => setModalVisible(true)}>
+                    onPress={() => setEditModalVisible(true)}>
                     <Ionicons name="pencil" size={24} color={'#578BBB'} />
                 </TouchableOpacity>
 
@@ -256,30 +262,33 @@ export default function ProfileScreen() {
                         </Text>
                         <Text style={[
                             styles.pinboardText,
-                            { color: colorScheme === 'dark' ? '#EEE' : '#000' }]}>
+                            { color: colorScheme === 'dark' ? '#EEE' : '#000' }]}
+                            numberOfLines={2}
+                            ellipsizeMode='tail'
+                        >
                             {userData.aboutMe}
                         </Text>
 
                         {/* location info */}
                         <View style={styles.locationContainer}>
-                            {userData.location.country && (
+                            {userData.widgets.country && (
                                 <View style={styles.locationItem}>
                                 <FontAwesome name="flag" size={14} color="#333" />
-                                <Text style={styles.locationText}>{userData.location.country}</Text>
+                                <Text style={styles.locationText}>{userData.widgets.country}</Text>
                                 </View>
                             )}
                             
-                            {userData.location.campus && (
+                            {userData.widgets.campus && (
                                 <View style={styles.locationItem}>
                                 <FontAwesome name="university" size={14} color="#333" />
-                                <Text style={styles.locationText}>{userData.location.campus}</Text>
+                                <Text style={styles.locationText}>{userData.widgets.campus}</Text>
                                 </View>
                             )}
                             
-                            {userData.location.accomodation && (
+                            {userData.widgets.accomodation && (
                                 <View style={styles.locationItem}>
                                 <MaterialIcons name="apartment" size={14} color="#333" />
-                                <Text style={styles.locationText}>{userData.location.accomodation}</Text>
+                                <Text style={styles.locationText}>{userData.widgets.accomodation}</Text>
                                 </View>
                             )}
                         </View>
@@ -318,13 +327,28 @@ export default function ProfileScreen() {
             </View>
 
             <UploadModal 
-                modalVisible={modalVisible}
-                onBackPress={() => setModalVisible(false)}
+                modalVisible={pfpModalVisible}
+                onBackPress={() => setPfpModalVisible(false)}
                 onCameraPress={handleCameraUpload}
                 onGalleryPress={handleGalleryUpload}
                 onRemovePress={handleRemoveImage}
                 isLoading={uploadLoading}
                 hasExistingImage={profileImage.uri !== "https://placekitten.com/300/300"}
+            />
+
+            <EditProfileModal
+                modalVisible={editModalVisible}
+                onClose={() => setEditModalVisible(false)}
+                userData={{
+                    name: userData.name,
+                    aboutMe: userData.aboutMe,
+                    widgets: userData.widgets,
+                }}
+                onUpdateSuccess={handleProfileUpdate}
+                onPhotoEditRequest={() => {
+                    setEditModalVisible(false);
+                    setPfpModalVisible(true);
+                }}
             />
         </SafeAreaView>
     );
@@ -377,9 +401,9 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     profilePicture: {
-        width: 194,
-        height: 194,
-        borderRadius: 88,
+        width: 178,
+        height: 178,
+        borderRadius: 100,
     },
     userName: {
         fontSize: 24,
@@ -396,6 +420,7 @@ const styles = StyleSheet.create({
         padding: 20,
         marginBottom: 20,
         width: '90%',
+        minHeight: 150,
         alignSelf: 'center',
     },
     cornerDot: {
@@ -435,6 +460,8 @@ const styles = StyleSheet.create({
         fontSize: 12,
         marginBottom: 15,
         lineHeight: 22,
+        height: 44,
+        overflow: 'hidden',
     },
     locationContainer: {
         flexDirection: 'row',

@@ -98,6 +98,37 @@ app.post("/userdata", async(req, res) => {
     }
 });
 
+app.post("/update-profile", async(req, res) => {
+    const { token, preferredName, aboutMe, country, campus, accomodation } = req.body;
+    try {
+        const user = jwt.verify(token, process.env.JWT_SECRET);
+        const userEmail = user.email;
+        const validatedAboutMe = aboutMe && aboutMe.length > 120 
+            ? aboutMe.substring(0, 120) 
+            : aboutMe;
+        const updatedUser = await User.findOneAndUpdate(
+            { email: userEmail },
+            {
+                preferredName,
+                aboutMe: validatedAboutMe,
+                country,
+                campus,
+                accomodation
+            },
+            { new: true }
+        );
+
+        if (!updatedUser) {
+            return res.send({ status: "error", data: "User not found" });
+        }
+
+        return res.send({ status: "ok", data: "Profile updated successfully" });
+    } catch (error) {
+        console.error('Update profile error: ', error);
+        return res.send({ status: "error", data: "Invalid token" });
+    }
+});
+
 app.listen(5001, () => {
     console.log("Node js server started.")
 })
