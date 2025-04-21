@@ -6,7 +6,7 @@ import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
 import { API_URL, useAuth } from '@/context/AuthContext';
 import axios from 'axios';
-import { Picker } from '@react-native-picker/picker';
+import DropDownPicker from 'react-native-dropdown-picker';
 import { COUNTRIES } from '@/constants/CountryData';
 import { QMUL_CAMPUSES } from '@/constants/CampusData';
 import { QMUL_ACCOMMODATIONS } from '@/constants/AccomodationData';
@@ -41,8 +41,11 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
     const [name, setName] = useState('');
     const [aboutMe, setAboutMe] = useState('');
     const [country, setCountry] = useState('');
+    const [countryOpen, setCountryOpen] = useState(false);
     const [campus, setCampus] = useState('');
+    const [campusOpen, setCampusOpen] = useState(false);
     const [accomodation, setAccomodation] = useState('');
+    const [accomodationOpen, setAccomodationOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
 
@@ -164,46 +167,60 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
 
                     {/* country field */}
                     <View style={styles.inputContainer}>
-                        <Text style={styles.label}>Country</Text>
-                        <TextInput
-                            style={[
-                                styles.input,
-                                { color: colorScheme === 'dark' ? '#fff' : '#000' }
-                            ]}
+                        <Text style={styles.label}>Nationality</Text>
+                        <DropDownPicker
+                            open={countryOpen}
                             value={country}
-                            onChangeText={setCountry}
-                            placeholder="Your nationality"
-                            placeholderTextColor={colorScheme === 'dark' ? '#aaa' : '#999'}
+                            items={COUNTRIES}
+                            setOpen={setCountryOpen}
+                            setValue={setCountry}
+                            placeholder="Select your nationality"
+                            searchable={true}
+                            searchPlaceholder="Search for a country..."
+                            style={styles.dropdown}
+                            dropDownContainerStyle={styles.dropdownContainer}
+                            textStyle={styles.dropdownText}
+                            searchTextInputStyle={styles.searchInput}
+                            maxHeight={200}
+                            zIndex={3000}
                         />
                     </View>
 
                     {/* campus field */}
                     <View style={styles.inputContainer}>
                         <Text style={styles.label}>Campus</Text>
-                        <TextInput
-                            style={[
-                                styles.input,
-                                { color: colorScheme === 'dark' ? '#fff' : '#000' }
-                            ]}
+                        <DropDownPicker
+                            open={campusOpen}
                             value={campus}
-                            onChangeText={setCampus}
-                            placeholder="Your campus"
-                            placeholderTextColor={colorScheme === 'dark' ? '#aaa' : '#999'}
+                            items={QMUL_CAMPUSES}
+                            setOpen={setCampusOpen}
+                            setValue={setCampus}
+                            placeholder="Select your campus"
+                            style={styles.dropdown}
+                            dropDownContainerStyle={styles.dropdownContainer}
+                            textStyle={styles.dropdownText}
+                            maxHeight={200}
+                            zIndex={2000}
                         />
                     </View>
 
                     {/* accommodation field */}
                     <View style={styles.inputContainer}>
                         <Text style={styles.label}>Accommodation</Text>
-                        <TextInput
-                            style={[
-                                styles.input,
-                                { color: colorScheme === 'dark' ? '#fff' : '#000' }
-                            ]}
+                        <DropDownPicker
+                            open={accomodationOpen}
                             value={accomodation}
-                            onChangeText={setAccomodation}
-                            placeholder="Your accommodation"
-                            placeholderTextColor={colorScheme === 'dark' ? '#aaa' : '#999'}
+                            items={QMUL_ACCOMMODATIONS}
+                            setOpen={setAccomodationOpen}
+                            setValue={setAccomodation}
+                            placeholder="Select your accommodation"
+                            style={styles.dropdown}
+                            dropDownContainerStyle={styles.dropdownContainer}
+                            textStyle={styles.dropdownText}
+                            searchTextInputStyle={styles.searchInput}
+                            maxHeight={200}
+                            zIndex={1000}
+                            zIndexInverse={3000}
                         />
                     </View>
 
@@ -301,6 +318,24 @@ const styles = StyleSheet.create({
     },
     textArea: {
         minHeight: 100,
+    },
+    dropdown: {
+        borderColor: '#ddd',
+        borderRadius: 8,
+        minHeight: 50,
+    },
+    dropdownContainer: {
+        borderColor: '#ddd',
+        borderRadius: 8,
+    },
+    dropdownText: {
+        fontSize: 16,
+    },
+    searchInput: {
+        borderColor: '#ddd',
+        borderRadius: 8,
+        padding: 12,
+        fontSize: 16,
     },
     errorText: {
         color: 'red',

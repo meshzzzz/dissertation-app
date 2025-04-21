@@ -10,6 +10,7 @@ import { FontAwesome, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import UploadModal from '@/components/profile/UploadModal';
 import EditProfileModal from '@/components/profile/EditProfileModal';
+import { COUNTRIES } from '@/constants/CountryData';
 
 interface Post {
     id: number;
@@ -177,6 +178,11 @@ export default function Profile() {
         setPfpModalVisible(false);
     };
 
+    const getCountryEmoji = (countryName: string) => {
+        const country = COUNTRIES.find(c => c.value === countryName);
+        return country?.emoji || '🌎'; // default world emoji
+    };
+
     return (
         <SafeAreaView style={[styles.container,{ backgroundColor: colors.background }]}>
             <View style={styles.contentContainer}>
@@ -273,21 +279,21 @@ export default function Profile() {
                         <View style={styles.locationContainer}>
                             {userData.widgets.country && (
                                 <View style={styles.locationItem}>
-                                <FontAwesome name="flag" size={14} color="#333" />
+                                <Text style={styles.countryEmoji}>{getCountryEmoji(userData.widgets.country)}</Text>
                                 <Text style={styles.locationText}>{userData.widgets.country}</Text>
                                 </View>
                             )}
                             
                             {userData.widgets.campus && (
                                 <View style={styles.locationItem}>
-                                <FontAwesome name="university" size={14} color="#333" />
+                                <FontAwesome name="university" size={12} color="#16529C" />
                                 <Text style={styles.locationText}>{userData.widgets.campus}</Text>
                                 </View>
                             )}
                             
                             {userData.widgets.accomodation && (
                                 <View style={styles.locationItem}>
-                                <MaterialIcons name="apartment" size={14} color="#333" />
+                                <MaterialIcons name="apartment" size={15} color="#16529C" />
                                 <Text style={styles.locationText}>{userData.widgets.accomodation}</Text>
                                 </View>
                             )}
@@ -458,10 +464,13 @@ const styles = StyleSheet.create({
     },
     pinboardText: {
         fontSize: 12,
-        marginBottom: 15,
+        marginBottom: 10,
         lineHeight: 22,
         height: 44,
         overflow: 'hidden',
+    },
+    countryEmoji: {
+        fontSize: 14,
     },
     locationContainer: {
         flexDirection: 'row',
@@ -470,11 +479,15 @@ const styles = StyleSheet.create({
     locationItem: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 10
+        marginBottom: 10,
+        flex: 1,
     },
     locationText: {
-        marginLeft: 4,
-        fontSize: 12,
+        marginLeft: 8,
+        fontSize: 10,
+        flexShrink: 1,
+        flexWrap: 'wrap',
+        maxWidth: '70%',
     },
     postsSection: {
         width: '100%',
