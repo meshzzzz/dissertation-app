@@ -12,6 +12,6 @@ mongoose
     });
 
 // models
-require("./models/User");
+require("../models/User");
 
 module.exports = mongoose;
