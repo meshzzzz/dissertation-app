@@ -1,13 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { SafeAreaView, StatusBar, ScrollView, StyleSheet } from 'react-native';
+import { SafeAreaView, StatusBar, ScrollView, StyleSheet, ActivityIndicator } from 'react-native';
 import { Text, View } from '@/components/Themed';
 import { useTheme } from '@react-navigation/native';
 import { useColorScheme } from '@/components/useColorScheme';
 import { API_URL, useAuth } from '@/context/AuthContext';
 import axios from 'axios';
 import { useRouter } from 'expo-router';
-
-// Import our reusable components
 import SearchBar from '@/components/SearchBar';
 import TabButtons, { TabOption } from '@/components/TabButtons';
 import GroupCard from '@/components/GroupCard';
@@ -24,9 +22,12 @@ export default function Groups() {
     const colorScheme = useColorScheme();
     const router = useRouter();
     const { authState } = useAuth();
-
     const [searchQuery, setSearchQuery] = useState('');
     const [activeTab, setActiveTab] = useState('all');
+    const [allGroups, setAllGroups] = useState<Group[]>([]);
+    const [myGroups, setMyGroups] = useState<Group[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     // tab options
     const tabOptions: TabOption[] = [
@@ -46,33 +47,56 @@ export default function Groups() {
         '#039BE5', // Light Blue
     ];
 
-    // mock data
-    const groups: Group[] = [
-        { id: '1', name: 'QMUL', membersCount: 2930, backgroundColor: groupBackgroundColors[0] },
-        { id: '2', name: 'Accomodation', membersCount: 780, backgroundColor: groupBackgroundColors[1] },
-        { id: '3', name: 'Whitechapel', membersCount: 966, backgroundColor: groupBackgroundColors[2] },
-        { id: '4', name: 'Mile End', membersCount: 1545, backgroundColor: groupBackgroundColors[3] },
-        { id: '5', name: 'Walking', membersCount: 206, backgroundColor: groupBackgroundColors[4] },
-        { id: '6', name: 'London Days Out', membersCount: 1577, backgroundColor: groupBackgroundColors[5] },
-        { id: '7', name: 'LGBTQ+', membersCount: 968, backgroundColor: groupBackgroundColors[6] },
-        { id: '8', name: 'Music', membersCount: 775, backgroundColor: groupBackgroundColors[7] },
-    ];
-  
-    async function getData() {
+    // Function to fetch all groups
+    const fetchAllGroups = async () => {
+        try {
+            const response = await axios.get(`${API_URL}/groups`);
+            if (response.data.status === 'ok') {
+                setAllGroups(response.data.data);
+            } else {
+                setError('Failed to fetch groups');
+            }
+        } catch (error) {
+            console.error("Error fetching all groups:", error);
+            setError('Network error when fetching groups');
+        }
+    };
+
+    // Function to fetch user's groups
+    const fetchMyGroups = async () => {
         if (authState?.token) {
             try {
-                const response = await axios.post(`${API_URL}/userdata`, {
-                token: authState.token
+                const response = await axios.post(`${API_URL}/my-groups`, {
+                    token: authState.token
                 });
-                console.log(response.data);
+                
+                if (response.data.status === 'ok') {
+                    setMyGroups(response.data.data);
+                } else {
+                    setError('Failed to fetch your groups');
+                }
             } catch (error) {
-                console.error("Error fetching user data:", error);
+                console.error("Error fetching user groups:", error);
+                setError('Network error when fetching your groups');
             }
         }
-    }
+    };
 
     useEffect(() => {
-        getData();
+        const loadData = async () => {
+            setLoading(true);
+            setError(null);
+            
+            try {
+                await Promise.all([fetchAllGroups(), fetchMyGroups()]);
+            } catch (error) {
+                console.error("Error loading data:", error);
+                setError('Failed to load data');
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadData();
     }, [authState]);
 
     // function to handle navigation
@@ -82,6 +106,17 @@ export default function Groups() {
         } catch (error) {
             console.error("Navigation error:", error);
         }
+    };
+
+    // Filter the groups based on search query
+    const filteredGroups = () => {
+        const groups = activeTab === 'all' ? allGroups : myGroups;
+        
+        if (!searchQuery) return groups;
+        
+        return groups.filter(group => 
+            group.name.toLowerCase().includes(searchQuery.toLowerCase())
+        );
     };
 
     return (
@@ -103,24 +138,42 @@ export default function Groups() {
                 />
                 
                 {/* Groups Grid */}
-                <ScrollView 
-                    style={styles.scrollView}
-                    showsVerticalScrollIndicator={false}
-                    contentContainerStyle={styles.scrollViewContent}
-                >
-                    <View style={styles.groupsGrid}>
-                        {groups.map((group) => (
-                            <GroupCard
-                            key={group.id}
-                            id={group.id}
-                            name={group.name}
-                            membersCount={group.membersCount}
-                            backgroundColor={group.backgroundColor}
-                            onPress={handleGroupPress}
-                            />
-                        ))}
+                {loading ? (
+                    <View style={styles.centerContainer}>
+                        <ActivityIndicator size="large" color={colors.primary} />
                     </View>
-                </ScrollView>
+                ) : error ? (
+                    <View style={styles.centerContainer}>
+                        <Text style={styles.errorText}>{error}</Text>
+                    </View>
+                ) : filteredGroups().length === 0 ? (
+                    <View style={styles.centerContainer}>
+                        <Text style={styles.emptyText}>
+                            {activeTab === 'my' 
+                                ? "You haven't joined any groups yet." 
+                                : "No groups found."}
+                        </Text>
+                    </View>
+                ) : (
+                    <ScrollView 
+                        style={styles.scrollView}
+                        showsVerticalScrollIndicator={false}
+                        contentContainerStyle={styles.scrollViewContent}
+                    >
+                        <View style={styles.groupsGrid}>
+                            {filteredGroups().map((group) => (
+                                <GroupCard
+                                    key={group.id}
+                                    id={group.id}
+                                    name={group.name}
+                                    membersCount={group.membersCount}
+                                    backgroundColor={group.backgroundColor}
+                                    onPress={handleGroupPress}
+                                />
+                            ))}
+                        </View>
+                    </ScrollView>
+                )}
             </View>
         </SafeAreaView>
     );
@@ -144,5 +197,20 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         flexWrap: 'wrap',
         justifyContent: 'space-between',
+    },
+    centerContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    errorText: {
+        fontSize: 16,
+        color: '#E53935',
+        textAlign: 'center',
+    },
+    emptyText: {
+        fontSize: 16,
+        textAlign: 'center',
+        opacity: 0.7,
     }
   });

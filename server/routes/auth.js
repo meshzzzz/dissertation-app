@@ -2,8 +2,25 @@ const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
 const User = mongoose.model('User');
+const Group = mongoose.model('Group');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+
+// initial signup interests to group mapping
+const INTEREST_TO_GROUP_MAP = {
+    '1': 'Animals',
+    '2': 'Music',
+    '3': 'Dancing',
+    '4': 'London Days Out',
+    '5': 'Books & Reading',
+    '6': 'Cooking & Food',
+    '7': 'Movies & Film',
+    '8': 'Gaming',
+    '9': 'Sports & Fitness',
+    '10': 'Travel',
+    '11': 'Art & Design',
+    '12': 'Photography'
+};
 
 // signup route
 router.post('/signup', async(req, res) => {
@@ -19,16 +36,16 @@ router.post('/signup', async(req, res) => {
         interests
     } = req.body;
 
-    const existingUser = await User.findOne({email: email})
-
-    if(existingUser) {
-        return res.send({status: "error", data: "User already exists."});
-    }
-
-    const encryptedPassword = await bcrypt.hash(password, 12);
-
     try {
-        await User.create({
+        const existingUser = await User.findOne({email: email})
+
+        if(existingUser) {
+            return res.send({status: "error", data: "User already exists."});
+        }
+
+        const encryptedPassword = await bcrypt.hash(password, 12);
+
+        const newUser = await User.create({
             email, 
             firstName, 
             lastName, 
@@ -39,9 +56,31 @@ router.post('/signup', async(req, res) => {
             yearOfGraduation,
             interests
         });
-        res.send({status:"ok", data: "User created"})
+
+        // if the user selected interests, find the corresponding groups and add them
+        if (interests && interests.length > 0) {
+            // map interest IDs to group names
+            const groupNames = interests.map(interestId => INTEREST_TO_GROUP_MAP[interestId])
+                               .filter(name => name);
+
+            const groups = await Group.find({ name: { $in: groupNames } });
+            if (groups.length > 0) {
+                // add group IDs to user's groups array
+                const groupIds = groups.map(group => group._id);
+                newUser.groups = groupIds;
+                await newUser.save();
+                
+                // add user to each group's members array
+                for (const group of groups) {
+                    group.members.push(newUser._id);
+                    await group.save();
+                }
+            }
+        }
+        res.send({status: "ok", data: "User created"});
     } catch (error) {
-        res.send({status:"error", data: error})
+        console.error("Signup error:", error);
+        res.send({status: "error", data: error.message || "Error creating user"});
     }
 });
 

@@ -58,6 +58,10 @@ const UserSchema = new mongoose.Schema({
         type: String,
         default: ''
     },
+    groups: {
+        type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Group' }],
+        default: []
+    },
     createdAt: {
         type: Date,
         default: Date.now
