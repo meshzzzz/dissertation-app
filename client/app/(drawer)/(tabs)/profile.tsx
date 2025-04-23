@@ -586,8 +586,8 @@ const styles = StyleSheet.create({
     pinboard: {
         position: 'relative',
         borderRadius: 15,
-        padding: 20,
-        marginBottom: 20,
+        padding: 18,
+        marginBottom: 18,
         width: '90%',
         minHeight: 150,
         alignSelf: 'center',
