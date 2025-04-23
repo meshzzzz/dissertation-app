@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { SafeAreaView, StatusBar, ScrollView, StyleSheet, ActivityIndicator } from 'react-native';
 import { Text, View } from '@/components/Themed';
 import { useTheme } from '@react-navigation/native';
@@ -8,26 +8,41 @@ import axios from 'axios';
 import { useRouter } from 'expo-router';
 import SearchBar from '@/components/SearchBar';
 import TabButtons, { TabOption } from '@/components/TabButtons';
-import GroupCard from '@/components/GroupCard';
-
-interface Group {
-    id: string;
-    name: string;
-    membersCount: number;
-    backgroundColor: string;
-}
+import GroupCard from '@/components/groups/GroupCard';
+import JoinGroupModal from '@/components/groups/JoinGroupModal';
+import Popup from '@/components/Popup';
+import { Group } from '@/types/Group';
 
 export default function Groups() {
     const { colors } = useTheme();
     const colorScheme = useColorScheme();
     const router = useRouter();
     const { authState } = useAuth();
+    // state for search & tabs
     const [searchQuery, setSearchQuery] = useState('');
     const [activeTab, setActiveTab] = useState('all');
+    // state for groups data
     const [allGroups, setAllGroups] = useState<Group[]>([]);
     const [myGroups, setMyGroups] = useState<Group[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    // state for join modal
+    const [joinModalVisible, setJoinModalVisible] = useState(false);
+    const [selectedGroup, setSelectedGroup] = useState<{
+        id: string;
+        name: string;
+        backgroundColor: string;
+        membersCount: number;
+        description: string;
+    } | null>(null);
+    const [joiningGroup, setJoiningGroup] = useState(false);
+    // state for success/error notification popup
+    const [notification, setNotification] = useState({
+        visible: false,
+        type: 'success' as 'success' | 'error',
+        message: ''
+    });
+
 
     // tab options
     const tabOptions: TabOption[] = [
@@ -35,67 +50,33 @@ export default function Groups() {
     { id: 'all', label: 'All Groups' }
     ];
 
-    // background colors for groups
-    const groupBackgroundColors = [
-        '#5E35B1', // Deep Purple
-        '#1E88E5', // Blue
-        '#43A047', // Green
-        '#E53935', // Red
-        '#FB8C00', // Orange
-        '#8E24AA', // Purple
-        '#3949AB', // Indigo
-        '#039BE5', // Light Blue
-    ];
+    // load groups data
+    const loadData = async () => {
+        if (!authState?.token) return;
 
-    // Function to fetch all groups
-    const fetchAllGroups = async () => {
+        setLoading(true);
+        setError(null);
+
         try {
-            const response = await axios.get(`${API_URL}/groups`);
-            if (response.data.status === 'ok') {
-                setAllGroups(response.data.data);
-            } else {
-                setError('Failed to fetch groups');
-            }
-        } catch (error) {
-            console.error("Error fetching all groups:", error);
-            setError('Network error when fetching groups');
-        }
-    };
+            const [allRes, myRes] = await Promise.all([
+                axios.get(`${API_URL}/groups`),
+                axios.post(`${API_URL}/my-groups`, { token: authState.token })
+            ]);
 
-    // Function to fetch user's groups
-    const fetchMyGroups = async () => {
-        if (authState?.token) {
-            try {
-                const response = await axios.post(`${API_URL}/my-groups`, {
-                    token: authState.token
-                });
-                
-                if (response.data.status === 'ok') {
-                    setMyGroups(response.data.data);
-                } else {
-                    setError('Failed to fetch your groups');
-                }
-            } catch (error) {
-                console.error("Error fetching user groups:", error);
-                setError('Network error when fetching your groups');
-            }
+            if (allRes.data.status === 'ok') setAllGroups(allRes.data.data);
+            else setError('Failed to fetch all groups.');
+
+            if (myRes.data.status === 'ok') setMyGroups(myRes.data.data);
+            else setError('Failed to fetch your groups.');
+        } catch (err) {
+            console.error('Error fetching groups:', err);
+            setError('Network error while fetching groups.');
+        } finally {
+            setLoading(false);
         }
     };
 
     useEffect(() => {
-        const loadData = async () => {
-            setLoading(true);
-            setError(null);
-            
-            try {
-                await Promise.all([fetchAllGroups(), fetchMyGroups()]);
-            } catch (error) {
-                console.error("Error loading data:", error);
-                setError('Failed to load data');
-            } finally {
-                setLoading(false);
-            }
-        };
         loadData();
     }, [authState]);
 
@@ -108,16 +89,74 @@ export default function Groups() {
         }
     };
 
-    // Filter the groups based on search query
-    const filteredGroups = () => {
-        const groups = activeTab === 'all' ? allGroups : myGroups;
+    // open join group modal
+    const handleJoinPress = (group: Group) => {
+        setSelectedGroup(group);
+        setJoinModalVisible(true);
+    };
+
+     // join a group
+     const handleJoinGroup = async () => {
+        if (!selectedGroup || !authState?.token) return;
         
-        if (!searchQuery) return groups;
+        setJoiningGroup(true);
         
-        return groups.filter(group => 
+        try {
+            const response = await axios.post(`${API_URL}/join-group`, {
+                token: authState.token,
+                groupId: selectedGroup.id
+            });
+            
+            if (response.data.status === 'ok') {
+                // refresh groups data
+                await loadData();
+                
+                // show success notification
+                setNotification({
+                    visible: true,
+                    type: 'success',
+                    message: `You've joined ${selectedGroup.name}!`
+                });
+                
+                // close modal
+                setJoinModalVisible(false);
+            } else {
+                setNotification({
+                    visible: true,
+                    type: 'error',
+                    message: response.data.data || 'Failed to join group'
+                });
+            }
+        } catch (error) {
+            console.error("Error joining group:", error);
+            setNotification({
+                visible: true,
+                type: 'error',
+                message: 'Network error when joining group'
+            });
+        } finally {
+            setJoiningGroup(false);
+        }
+    };
+
+    // close notification
+    const closeNotification = () => {
+        setNotification({...notification, visible: false});
+    };
+
+    // check if user has joined a group
+    const isGroupJoined = (groupId: string) => {
+        return myGroups.some(group => group.id === groupId);
+    };
+
+    // filter the groups based on search query w/ memoisation
+    const groupsToDisplay = useMemo(() => {
+        const base = activeTab === 'all' ? allGroups : myGroups;
+        if (!searchQuery) return base;
+        return base.filter(group =>
             group.name.toLowerCase().includes(searchQuery.toLowerCase())
         );
-    };
+    }, [searchQuery, activeTab, allGroups, myGroups]);
 
     return (
         <SafeAreaView style={styles.container}>
@@ -146,7 +185,7 @@ export default function Groups() {
                     <View style={styles.centerContainer}>
                         <Text style={styles.errorText}>{error}</Text>
                     </View>
-                ) : filteredGroups().length === 0 ? (
+                ) : groupsToDisplay.length === 0 ? (
                     <View style={styles.centerContainer}>
                         <Text style={styles.emptyText}>
                             {activeTab === 'my' 
@@ -155,26 +194,42 @@ export default function Groups() {
                         </Text>
                     </View>
                 ) : (
-                    <ScrollView 
-                        style={styles.scrollView}
-                        showsVerticalScrollIndicator={false}
-                        contentContainerStyle={styles.scrollViewContent}
-                    >
+                    <View style={styles.scrollView}>
                         <View style={styles.groupsGrid}>
-                            {filteredGroups().map((group) => (
+                            {groupsToDisplay.map((group) => (
                                 <GroupCard
                                     key={group.id}
-                                    id={group.id}
-                                    name={group.name}
-                                    membersCount={group.membersCount}
-                                    backgroundColor={group.backgroundColor}
+                                    group={group}
+                                    isJoined={isGroupJoined(group.id)}
                                     onPress={handleGroupPress}
+                                    onJoinPress={handleJoinPress}
                                 />
                             ))}
                         </View>
-                    </ScrollView>
+                    </View>
                 )}
             </View>
+
+            {/* join group modal */}
+            {selectedGroup && (
+                <JoinGroupModal 
+                    isVisible={joinModalVisible}
+                    onClose={() => setJoinModalVisible(false)}
+                    onJoin={handleJoinGroup}
+                    group={selectedGroup}
+                    isLoading={joiningGroup}
+                />
+            )}
+            
+            {/* notification popup */}
+            <Popup
+                visible={notification.visible}
+                type={notification.type}
+                message={notification.message}
+                onClose={closeNotification}
+                autoClose={true}
+                duration={3000}
+            />
         </SafeAreaView>
     );
 }
@@ -189,8 +244,6 @@ const styles = StyleSheet.create({
     },
     scrollView: {
         flex: 1,
-    },
-    scrollViewContent: {
         paddingBottom: 20,
     },
     groupsGrid: {
@@ -213,4 +266,4 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         opacity: 0.7,
     }
-  });
+});
