@@ -62,6 +62,11 @@ const UserSchema = new mongoose.Schema({
         type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Group' }],
         default: []
     },
+    role: {
+        type: String,
+        enum: ['user', 'superuser'],
+        default: 'user'
+    },
     createdAt: {
         type: Date,
         default: Date.now

@@ -1,7 +1,6 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { useColorScheme } from '@/components/useColorScheme';
-import Colors from '@/constants/Colors';
+import { View, StyleSheet } from 'react-native';
+import PillButton from './PillButton';
 
 export interface TabOption {
     id: string;
@@ -19,37 +18,16 @@ const TabButtons = ({
     activeTab, 
     onTabChange 
 }: TabButtonsProps) => {
-    const colorScheme = useColorScheme();
-    const secondaryColor = Colors[colorScheme ?? 'light'].secondary;
-
     return (
         <View style={styles.container}>
             {options.map((option, index) => (
-                <TouchableOpacity
+                <PillButton
                     key={option.id}
-                    style={[
-                        styles.tabButton,
-                        index < options.length - 1 && styles.marginRight,
-                        { 
-                            backgroundColor: activeTab === option.id 
-                                ? secondaryColor 
-                                : 'transparent',
-                            borderWidth: activeTab === option.id ? 0 : 1,
-                            borderColor: secondaryColor
-                        }
-                    ]}
+                    label={option.label}
+                    isActive={activeTab === option.id}
                     onPress={() => onTabChange(option.id)}
-                >
-                    <Text
-                        style={{ 
-                        color: activeTab === option.id 
-                            ? '#fff' 
-                            : secondaryColor
-                        }}
-                    >
-                        {option.label}
-                    </Text>
-                </TouchableOpacity>
+                    marginRight={index < options.length - 1}
+                />
             ))}
         </View>
     );
@@ -59,16 +37,6 @@ const styles = StyleSheet.create({
     container: {
         flexDirection: 'row',
         justifyContent: 'center',
-        marginBottom: 16, 
-    },
-    tabButton: {
-        borderRadius: 9999, 
-        paddingHorizontal: 20, 
-        paddingVertical: 8, 
-    },
-    marginRight: {
-        marginRight: 20,
     }
 });
-
 export default TabButtons;

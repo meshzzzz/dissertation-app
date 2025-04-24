@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, TouchableOpacity, TextInput, StyleSheet, View as DefaultView, ActivityIndicator } from 'react-native';
+import {KeyboardAvoidingView, Platform, Modal, TouchableOpacity, TextInput, StyleSheet, View as DefaultView, ActivityIndicator } from 'react-native';
 import { Text, View } from '@/components/Themed';
 import { Ionicons } from '@expo/vector-icons';
 import { useColorScheme } from '@/components/useColorScheme';

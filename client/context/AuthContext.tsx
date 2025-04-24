@@ -3,7 +3,11 @@ import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 
 interface AuthProps {
-    authState?: { token: string | null; authenticated: boolean | null };
+    authState?: {
+        token: string | null; 
+        authenticated: boolean | null;
+        role: 'user' | 'superuser' | null;
+    };
     onSignup?: (
         email: string, 
         firstName: string, 
@@ -31,19 +35,23 @@ export const AuthProvider = ({children}: any) => {
     const [authState, setAuthState] = useState<{
         token: string | null;
         authenticated: boolean | null;
+        role: 'user' | 'superuser' | null;
     }>({
         token: null,
-        authenticated: null
+        authenticated: null,
+        role: null
     })
 
     useEffect(() => {
         const loadToken = async () => {
             const token = await SecureStore.getItemAsync(TOKEN_KEY);
+            const role = await SecureStore.getItemAsync('user-role');
             console.log("stored token: ", token);
             if (token) {
                 setAuthState({
                     token: token,
-                    authenticated: true
+                    authenticated: true,
+                    role: role as 'user' | 'superuser' || 'user'
                 })
                 axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
             }
@@ -51,6 +59,7 @@ export const AuthProvider = ({children}: any) => {
                 setAuthState({
                     token: null,
                     authenticated: false,
+                    role: null
                 })
             }
         }
@@ -91,12 +100,15 @@ export const AuthProvider = ({children}: any) => {
             const result = await axios.post(`${API_URL}/login`, {email, password});
             setAuthState({
                 token: result.data.token,
-                authenticated: true
+                authenticated: true,
+                role: result.data.role
             })
 
             axios.defaults.headers.common['Authorization'] = `Bearer ${result.data.token}`;
-
             await SecureStore.setItemAsync(TOKEN_KEY, result.data.token);
+            if (result.data.role) {
+                await SecureStore.setItemAsync('user-role', result.data.role);
+            }
             return result
 
         } catch (e) {
@@ -106,10 +118,12 @@ export const AuthProvider = ({children}: any) => {
 
     const logout = async () => {
         await SecureStore.deleteItemAsync(TOKEN_KEY);
+        await SecureStore.deleteItemAsync('user-role');
         axios.defaults.headers.common['Authorization'] = '';
         setAuthState({
             token: null,
-            authenticated: false
+            authenticated: false,
+            role: null
         })
     }
 

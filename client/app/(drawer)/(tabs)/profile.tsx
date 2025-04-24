@@ -8,12 +8,10 @@ import { API_URL, useAuth } from '@/context/AuthContext';
 import axios from 'axios';
 import { FontAwesome, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
-import UploadModal from '@/components/profile/UploadModal';
+import ImagePickerModal from '@/components/images/ImagePickerModal';
 import EditProfileModal from '@/components/profile/EditProfileModal';
 import Popup from '@/components/Popup';
 import { COUNTRIES } from '@/constants/CountryData';
-
-const DEFAULT_PFP = "https://res.cloudinary.com/dtey1y2fw/image/upload/v1745352913/pfp_rwmsby.jpg"; 
 
 interface Post {
     id: number;
@@ -88,11 +86,9 @@ export default function Profile() {
                     yearOfStudy = `${yearsStudying}${suffix} Year `;
                 }
 
-                // set profile image from Cloudinary if available
+                // set profile image from Cloudinary
                 if (response.data?.data?.profileImage) {
                     setProfileImage({ uri: response.data.data.profileImage });
-                } else {
-                    setProfileImage({ uri: DEFAULT_PFP });
                 }
 
                 setUserData({
@@ -301,7 +297,6 @@ export default function Profile() {
             });
     
             if (response.data.status === 'ok') {
-                setProfileImage({ uri: DEFAULT_PFP }); 
                 getData(); 
                 setNotification({
                     visible: true,
@@ -485,14 +480,15 @@ export default function Profile() {
                 </View>
             </View>
 
-            <UploadModal 
+            <ImagePickerModal 
                 modalVisible={pfpModalVisible}
-                onBackPress={() => setPfpModalVisible(false)}
+                onClose={() => setPfpModalVisible(false)}
                 onCameraPress={handleCameraUpload}
                 onGalleryPress={handleGalleryUpload}
                 onRemovePress={handleRemoveImage}
                 isLoading={uploadLoading}
-                hasExistingImage={profileImage.uri !== DEFAULT_PFP}
+                hasExistingImage={!!profileImage.uri}
+                title="Update Profile Picture"
             />
 
             <EditProfileModal

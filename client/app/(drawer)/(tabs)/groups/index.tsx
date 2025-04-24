@@ -6,10 +6,13 @@ import { useColorScheme } from '@/components/useColorScheme';
 import { API_URL, useAuth } from '@/context/AuthContext';
 import axios from 'axios';
 import { useRouter } from 'expo-router';
+import { usePermissions } from '@/hooks/usePermissions';
 import SearchBar from '@/components/SearchBar';
 import TabButtons, { TabOption } from '@/components/TabButtons';
+import PillButton from '@/components/PillButton';
 import GroupCard from '@/components/groups/GroupCard';
 import JoinGroupModal from '@/components/groups/JoinGroupModal';
+import AddGroupModal from '@/components/groups/AddGroupModal';
 import Popup from '@/components/Popup';
 import { Group } from '@/types/Group';
 
@@ -18,6 +21,7 @@ export default function Groups() {
     const colorScheme = useColorScheme();
     const router = useRouter();
     const { authState } = useAuth();
+    const { isSuperuser } = usePermissions();
     // state for search & tabs
     const [searchQuery, setSearchQuery] = useState('');
     const [activeTab, setActiveTab] = useState('all');
@@ -31,11 +35,13 @@ export default function Groups() {
     const [selectedGroup, setSelectedGroup] = useState<{
         id: string;
         name: string;
-        backgroundColor: string;
+        groupImage: string;
         membersCount: number;
         description: string;
     } | null>(null);
     const [joiningGroup, setJoiningGroup] = useState(false);
+    // state for add group modal
+    const [addGroupModalVisible, setAddGroupModalVisible] = useState(false);
     // state for success/error notification popup
     const [notification, setNotification] = useState({
         visible: false,
@@ -60,7 +66,7 @@ export default function Groups() {
         try {
             const [allRes, myRes] = await Promise.all([
                 axios.get(`${API_URL}/groups`),
-                axios.post(`${API_URL}/my-groups`, { token: authState.token })
+                axios.post(`${API_URL}/user/groups`, { token: authState.token })
             ]);
 
             if (allRes.data.status === 'ok') setAllGroups(allRes.data.data);
@@ -102,7 +108,7 @@ export default function Groups() {
         setJoiningGroup(true);
         
         try {
-            const response = await axios.post(`${API_URL}/join-group`, {
+            const response = await axios.post(`${API_URL}/groups/join`, {
                 token: authState.token,
                 groupId: selectedGroup.id
             });
@@ -158,6 +164,10 @@ export default function Groups() {
         );
     }, [searchQuery, activeTab, allGroups, myGroups]);
 
+    const handleAddPress = () => {
+        setAddGroupModalVisible(true);
+    };
+    
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.content}>
@@ -169,12 +179,25 @@ export default function Groups() {
                     onChangeText={setSearchQuery}
                 />
                 
-                {/* Tab Buttons Component */}
-                <TabButtons 
-                    options={tabOptions}
-                    activeTab={activeTab}
-                    onTabChange={setActiveTab}
-                />
+                {/* Tab Buttons & Manage Button (for superusers) */}
+                <View style={styles.navigationContainer}>
+                    <TabButtons 
+                        options={tabOptions}
+                        activeTab={activeTab}
+                        onTabChange={setActiveTab}
+                    />
+                    
+                    {isSuperuser() && (
+                        <View style={styles.manageButtonContainer}>
+                            <PillButton
+                                iconName="add"
+                                onPress={handleAddPress}
+                                color={colors.primary}
+                                isActive={true}
+                            />
+                        </View>
+                    )}
+                </View>
                 
                 {/* Groups Grid */}
                 {loading ? (
@@ -194,7 +217,7 @@ export default function Groups() {
                         </Text>
                     </View>
                 ) : (
-                    <View style={styles.scrollView}>
+                    <ScrollView style={styles.scrollView}>
                         <View style={styles.groupsGrid}>
                             {groupsToDisplay.map((group) => (
                                 <GroupCard
@@ -206,7 +229,7 @@ export default function Groups() {
                                 />
                             ))}
                         </View>
-                    </View>
+                    </ScrollView>
                 )}
             </View>
 
@@ -229,6 +252,16 @@ export default function Groups() {
                 onClose={closeNotification}
                 autoClose={true}
                 duration={3000}
+            />
+
+            {/* add group modal */}
+            <AddGroupModal 
+                modalVisible={addGroupModalVisible}
+                onClose={() => setAddGroupModalVisible(false)}
+                onSuccess={() => {
+                    loadData(); 
+                    setNotification({ visible: true, type: 'success', message: 'Group created successfully!' });
+                }}
             />
         </SafeAreaView>
     );
@@ -255,6 +288,16 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
+    },
+    navigationContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 16,
+    },
+    manageButtonContainer: {
+        position: 'absolute',
+        right: 0,
     },
     errorText: {
         fontSize: 16,

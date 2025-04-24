@@ -7,6 +7,7 @@ import {
     TouchableOpacity, 
     ActivityIndicator,
     TouchableWithoutFeedback,
+    Image
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useColorScheme } from '@/components/useColorScheme';
@@ -58,10 +59,12 @@ const JoinGroupModal = ({
                                 )}
                             </View>
                             
-                            {/* group icon/color */}
-                            <View style={[styles.groupIcon, { backgroundColor: group.backgroundColor }]}>
-                                {/* TODO: this is to be an image instead of just color */}
-                            </View>
+                            {/* group icon */}
+                            <Image
+                                source={{ uri: group.groupImage }}
+                                style={styles.groupIcon}
+                                resizeMode="cover"
+                            />
                             
                             {/* group info */}
                             <Text style={styles.groupName}>{group.name}</Text>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, Dimensions, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, Dimensions, StyleSheet, Image } from 'react-native';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
 import { Group } from '@/types/Group';
@@ -12,8 +12,12 @@ interface GroupCardProps {
 }
 
 const { width } = Dimensions.get('window');
-// calculate card width to ensure proper dimensions even with percentage classes
-const cardWidth = Math.floor((width - 40) / 2);
+ // spacing between cards
+const gap = 14;
+// 2 cards + 3 gaps (left, middle, right)
+const cardWidth = Math.floor((width - gap * 3) / 2); 
+// 75% of the width
+const cardHeight = Math.floor(cardWidth * 0.75); 
 
 const GroupCard = ({ 
     group,
@@ -35,17 +39,15 @@ const GroupCard = ({
     };
     return (
         <TouchableOpacity
-            style={[
-                styles.card,
-                { 
-                    width: cardWidth, 
-                    height: cardWidth,
-                    backgroundColor : group.backgroundColor,
-                }
-            ]}
+            style={[styles.card, { width: cardWidth, height: cardHeight, marginBottom: 12 }]}
             onPress={handlePress}
             activeOpacity={0.8}
         >
+            <Image
+                source={{ uri: group.groupImage }}
+                style={StyleSheet.absoluteFillObject}
+                resizeMode="cover"
+            />
             {/* overlay for better text visibility */}
             <View style={styles.overlay} />
             {/* Joined indicator */}
@@ -68,7 +70,6 @@ const styles = StyleSheet.create({
     card: {
         overflow: 'hidden',
         borderRadius: 12, 
-        marginBottom: 16, 
         position: 'relative',
     },
     overlay: {
@@ -77,13 +78,14 @@ const styles = StyleSheet.create({
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.2)', 
+        backgroundColor: 'rgba(0, 0, 0, 0.4)', 
     },
     joinedBadgeContainer: {
         position: 'absolute',
         top: 8,
         right: 8,
         zIndex: 10,
+        padding: 4,
     },
     joinedBadge: {
         paddingHorizontal: 8,
@@ -101,7 +103,7 @@ const styles = StyleSheet.create({
         bottom: 0,
         left: 0,
         right: 0,
-        padding: 8, 
+        padding: 14, 
     },
     title: {
         color: 'white',
