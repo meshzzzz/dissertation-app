@@ -1,5 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import {KeyboardAvoidingView, Platform, Modal, TouchableOpacity, TextInput, StyleSheet, View as DefaultView, ActivityIndicator } from 'react-native';
+import {
+    KeyboardAvoidingView, 
+    Platform, 
+    Modal, 
+    TouchableOpacity, 
+    TextInput, 
+    StyleSheet, 
+    ActivityIndicator,
+    TouchableWithoutFeedback,
+    Keyboard,
+    ScrollView 
+} from 'react-native';
 import { Text, View } from '@/components/Themed';
 import { Ionicons } from '@expo/vector-icons';
 import { useColorScheme } from '@/components/useColorScheme';
@@ -102,157 +113,188 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
             transparent={true}
             onRequestClose={onClose}
         >
-            <View
-                style={styles.container}
-                lightColor={Colors.overlay}
-                darkColor={Colors.overlay}
-            >
+            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
                 <View
-                    style={styles.modalContent}
-                    lightColor="#FFFFFF"
-                    darkColor="#1F2937"
+                    style={styles.container}
+                    lightColor={Colors.overlay}
+                    darkColor={Colors.overlay}
                 >
-                    <View style={styles.header}>
-                        <Text style={styles.title}>Edit Profile</Text>
-                        <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-                            <Ionicons name="close" size={24} color={colorScheme === 'dark' ? '#fff' : '#000'} />
-                        </TouchableOpacity>
-                    </View>
-
-                    <TouchableOpacity 
-                        style={styles.photoEditButton}
-                        onPress={onPhotoEditRequest}
+                
+                    <View
+                        style={styles.modalContent}
+                        lightColor="#FFFFFF"
+                        darkColor="#1F2937"
                     >
-                        <Ionicons name="camera" size={20} color="#fff" />
-                        <Text style={styles.photoEditText}>Change Profile Photo</Text>
-                    </TouchableOpacity>
-
-                    {/* name field */}
-                    <View style={styles.inputContainer}>
-                        <Text style={styles.label}>Name</Text>
-                        <TextInput
-                            style={[
-                                styles.input,
-                                { color: colorScheme === 'dark' ? '#fff' : '#000' }
-                            ]}
-                            value={name}
-                            onChangeText={setName}
-                            placeholder="Your name"
-                            placeholderTextColor={colorScheme === 'dark' ? '#aaa' : '#999'}
-                        />
-                    </View>
-
-                    {/* about me field */}
-                    <View style={styles.inputContainer}>
-                        <Text style={styles.label}>About me</Text>
-                        <TextInput
-                            style={[
-                                styles.input,
-                                styles.textArea,
-                                { color: colorScheme === 'dark' ? '#fff' : '#000' }
-                            ]}
-                            value={aboutMe}
-                            onChangeText={(text) => {
-                                if (text.length <= 120) {
-                                    setAboutMe(text);
-                                }
-                            }}
-                            placeholder="Tell us about yourself (max 120 characters)"
-                            placeholderTextColor={colorScheme === 'dark' ? '#aaa' : '#999'}
-                            multiline
-                            numberOfLines={4}
-                            textAlignVertical="top"
-                        />
-                    </View>
-
-                    {/* country field */}
-                    <View style={styles.inputContainer}>
-                        <Text style={styles.label}>Nationality</Text>
-                        <DropDownPicker
-                            open={countryOpen}
-                            value={country}
-                            items={COUNTRIES}
-                            setOpen={setCountryOpen}
-                            setValue={setCountry}
-                            placeholder="Select your nationality"
-                            searchable={true}
-                            searchPlaceholder="Search for a country..."
-                            style={styles.dropdown}
-                            dropDownContainerStyle={styles.dropdownContainer}
-                            textStyle={styles.dropdownText}
-                            searchTextInputStyle={styles.searchInput}
-                            maxHeight={200}
-                            zIndex={3000}
-                        />
-                    </View>
-
-                    {/* campus field */}
-                    <View style={styles.inputContainer}>
-                        <Text style={styles.label}>Campus</Text>
-                        <DropDownPicker
-                            open={campusOpen}
-                            value={campus}
-                            items={QMUL_CAMPUSES}
-                            setOpen={setCampusOpen}
-                            setValue={setCampus}
-                            placeholder="Select your campus"
-                            style={styles.dropdown}
-                            dropDownContainerStyle={styles.dropdownContainer}
-                            textStyle={styles.dropdownText}
-                            maxHeight={200}
-                            zIndex={2000}
-                        />
-                    </View>
-
-                    {/* accommodation field */}
-                    <View style={styles.inputContainer}>
-                        <Text style={styles.label}>Accommodation</Text>
-                        <DropDownPicker
-                            open={accomodationOpen}
-                            value={accomodation}
-                            items={QMUL_ACCOMMODATIONS}
-                            setOpen={setAccomodationOpen}
-                            setValue={setAccomodation}
-                            placeholder="Select your accommodation"
-                            style={styles.dropdown}
-                            dropDownContainerStyle={styles.dropdownContainer}
-                            textStyle={styles.dropdownText}
-                            searchTextInputStyle={styles.searchInput}
-                            maxHeight={200}
-                            zIndex={1000}
-                            zIndexInverse={3000}
-                        />
-                    </View>
-
-                    {error ? <Text style={styles.errorText}>{error}</Text> : null}
-
-                    <View style={styles.buttonContainer}>
-                        <TouchableOpacity
-                            style={[styles.button, styles.cancelButton]}
-                            onPress={onClose}
-                            disabled={isLoading}
+                        <KeyboardAvoidingView
+                            behavior={Platform.OS === "ios" ? "padding" : "height"}
+                            style={styles.keyboardView}
                         >
-                            <Text style={styles.cancelButtonText}>Cancel</Text>
-                        </TouchableOpacity>
+                            <ScrollView
+                                contentContainerStyle={{ flexGrow: 1 }}
+                                keyboardShouldPersistTaps="handled"
+                            >
+                                <View style={styles.header}>
+                                    <Text style={styles.title}>Edit Profile</Text>
+                                    <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+                                        <Ionicons name="close" size={24} color={colorScheme === 'dark' ? '#fff' : '#000'} />
+                                    </TouchableOpacity>
+                                </View>
 
-                        <TouchableOpacity
-                            style={[
-                                styles.button, 
-                                styles.saveButton,
-                                { backgroundColor: accentColor }
-                            ]}
-                            onPress={handleSave}
-                            disabled={isLoading}
-                        >
-                            {isLoading ? (
-                                <ActivityIndicator color="#fff" size="small" />
-                            ) : (
-                                <Text style={styles.saveButtonText}>Save</Text>
-                            )}
-                        </TouchableOpacity>
+                                <TouchableOpacity 
+                                    style={styles.photoEditButton}
+                                    onPress={onPhotoEditRequest}
+                                >
+                                    <Ionicons name="camera" size={20} color="#fff" />
+                                    <Text style={styles.photoEditText}>Change Profile Photo</Text>
+                                </TouchableOpacity>
+
+                                {/* name field */}
+                                <View style={styles.inputContainer}>
+                                    <Text style={styles.label}>Name</Text>
+                                    <TextInput
+                                        style={[
+                                            styles.input,
+                                            { color: colorScheme === 'dark' ? '#fff' : '#000' }
+                                        ]}
+                                        value={name}
+                                        onChangeText={setName}
+                                        placeholder="Your name"
+                                        placeholderTextColor={colorScheme === 'dark' ? '#aaa' : '#999'}
+                                    />
+                                </View>
+
+                                {/* about me field */}
+                                <View style={styles.inputContainer}>
+                                    <Text style={styles.label}>About me</Text>
+                                    <TextInput
+                                        style={[
+                                            styles.input,
+                                            styles.textArea,
+                                            { color: colorScheme === 'dark' ? '#fff' : '#000' }
+                                        ]}
+                                        value={aboutMe}
+                                        onChangeText={(text) => {
+                                            if (text.length <= 100) {
+                                                setAboutMe(text);
+                                            }
+                                        }}
+                                        placeholder="Tell us about yourself (max 100 characters)"
+                                        placeholderTextColor={colorScheme === 'dark' ? '#aaa' : '#999'}
+                                        multiline
+                                        numberOfLines={4}
+                                        textAlignVertical="top"
+                                    />
+                                </View>
+
+                                {/* country field */}
+                                <View style={styles.inputContainer}>
+                                    <Text style={styles.label}>Nationality</Text>
+                                    <DropDownPicker
+                                        open={countryOpen}
+                                        value={country}
+                                        items={COUNTRIES}
+                                        setOpen={setCountryOpen}
+                                        setValue={setCountry}
+                                        placeholder="Select your nationality"
+                                        searchable
+                                        onOpen={() => {
+                                            setCampusOpen(false);
+                                            setAccomodationOpen(false);
+                                            Keyboard.dismiss();
+                                        }}
+                                        searchPlaceholder="Search for a country..."
+                                        style={styles.dropdown}
+                                        dropDownContainerStyle={styles.dropdownContainer}
+                                        textStyle={styles.dropdownText}
+                                        searchTextInputStyle={styles.searchInput}
+                                        listMode="SCROLLVIEW"    
+                                        maxHeight={200}
+                                        zIndex={3000}
+                                    />
+                                </View>
+
+                                {/* campus field */}
+                                <View style={styles.inputContainer}>
+                                    <Text style={styles.label}>Campus</Text>
+                                    <DropDownPicker
+                                        open={campusOpen}
+                                        value={campus}
+                                        items={QMUL_CAMPUSES}
+                                        setOpen={setCampusOpen}
+                                        setValue={setCampus}
+                                        placeholder="Select your campus"
+                                        onOpen={() => {
+                                            setCountryOpen(false);
+                                            setAccomodationOpen(false);
+                                            Keyboard.dismiss();
+                                        }}
+                                        style={styles.dropdown}
+                                        dropDownContainerStyle={styles.dropdownContainer}
+                                        textStyle={styles.dropdownText}
+                                        listMode="SCROLLVIEW"    
+                                        maxHeight={200}
+                                        zIndex={2000}
+                                    />
+                                </View>
+
+                                {/* accommodation field */}
+                                <View style={styles.inputContainer}>
+                                    <Text style={styles.label}>Accommodation</Text>
+                                    <DropDownPicker
+                                        open={accomodationOpen}
+                                        value={accomodation}
+                                        items={QMUL_ACCOMMODATIONS}
+                                        setOpen={setAccomodationOpen}
+                                        setValue={setAccomodation}
+                                        placeholder="Select your accommodation"
+                                        onOpen={() => {
+                                            setCountryOpen(false);
+                                            setCampusOpen(false);
+                                            Keyboard.dismiss();
+                                        }}
+                                        style={styles.dropdown}
+                                        dropDownContainerStyle={styles.dropdownContainer}
+                                        textStyle={styles.dropdownText}
+                                        searchTextInputStyle={styles.searchInput}
+                                        maxHeight={200}
+                                        listMode="SCROLLVIEW"    
+                                        zIndex={1000}
+                                        zIndexInverse={3000}
+                                    />
+                                </View>
+
+                                {error ? <Text style={styles.errorText}>{error}</Text> : null}
+
+                                <View style={styles.buttonContainer}>
+                                    <TouchableOpacity
+                                        style={[styles.button, styles.cancelButton]}
+                                        onPress={onClose}
+                                        disabled={isLoading}
+                                    >
+                                        <Text style={styles.cancelButtonText}>Cancel</Text>
+                                    </TouchableOpacity>
+
+                                    <TouchableOpacity
+                                        style={[
+                                            styles.button, 
+                                            styles.saveButton,
+                                            { backgroundColor: accentColor }
+                                        ]}
+                                        onPress={handleSave}
+                                        disabled={isLoading}
+                                    >
+                                        {isLoading ? (
+                                            <ActivityIndicator color="#fff" size="small" />
+                                        ) : (
+                                            <Text style={styles.saveButtonText}>Save</Text>
+                                        )}
+                                    </TouchableOpacity>
+                                </View>
+                            </ScrollView>
+                        </KeyboardAvoidingView>
                     </View>
                 </View>
-            </View>
+            </TouchableWithoutFeedback>
         </Modal>
     );
 };
@@ -263,6 +305,9 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         padding: 20,
+    },
+    keyboardView: {
+        width: '100%',
     },
     modalContent: {
         width: '100%',

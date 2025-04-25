@@ -1,5 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, TouchableOpacity, TextInput, StyleSheet, View as DefaultView, ActivityIndicator, Image, AppState } from 'react-native';
+import { 
+    Modal, 
+    TouchableOpacity, 
+    TextInput, 
+    StyleSheet, 
+    ActivityIndicator, 
+    Image, 
+    KeyboardAvoidingView, 
+    Platform, 
+    TouchableWithoutFeedback, 
+    Keyboard 
+} from 'react-native';
 import { Text, View } from '@/components/Themed';
 import { Ionicons } from '@expo/vector-icons';
 import { useColorScheme } from '@/components/useColorScheme';
@@ -131,110 +142,117 @@ const AddGroupModal: React.FC<AddGroupModalProps> = ({
 
     return (
         <Modal animationType="fade" visible={modalVisible} transparent onRequestClose={onClose}>
-            <View style={styles.overlay}>
-                <View 
-                    style={styles.modal}
-                    lightColor="#FFFFFF"
-                    darkColor="#1F2937"
-                >
-                    <View style={styles.header}>
-                        <Text style={styles.title}>Add New Group</Text>
-                        <TouchableOpacity onPress={onClose}>
-                            <Ionicons name="close" size={24} color={colorScheme === 'dark' ? '#fff' : '#000'} />
-                        </TouchableOpacity>
-                    </View>
-
-                    <View style={styles.inputContainer}>
-                        <Text style={styles.label}>Group Name</Text>
-                        <TextInput
-                            style={[styles.input, { color: colorScheme === 'dark' ? '#fff' : '#000' }]}
-                            value={name}
-                            onChangeText={setName}
-                            placeholder="Enter group name"
-                            placeholderTextColor={colorScheme === 'dark' ? '#aaa' : '#999'}
-                        />
-                    </View>
-
-                    <View style={styles.inputContainer}>
-                        <Text style={styles.label}>Description</Text>
-                        <TextInput
-                            style={[
-                                styles.input,
-                                styles.textArea,
-                                { color: colorScheme === 'dark' ? '#fff' : '#000' }
-                            ]}
-                            value={description}
-                            onChangeText={setDescription}
-                            placeholder="Enter description"
-                            placeholderTextColor={colorScheme === 'dark' ? '#aaa' : '#999'}
-                            multiline
-                            numberOfLines={4}
-                            textAlignVertical="top"
-                        />
-                    </View>
-
-                    <View style={styles.inputContainer}>
-                        <Text style={styles.label}>Group Image</Text>
-                        
-                        {imageUri ? (
-                            <View style={styles.imagePreviewContainer}>
-                                <Image 
-                                    source={{ uri: imageUri }} 
-                                    style={styles.imagePreview} 
-                                    resizeMode="cover"
-                                />
-                                <TouchableOpacity 
-                                    style={styles.changeImageButton}
-                                    onPress={() => setShowImageOptions(true)}
-                                >
-                                    <Text style={styles.changeImageText}>Change Image</Text>
+            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                <View style={styles.overlay}>
+                <KeyboardAvoidingView
+                        behavior={Platform.OS === "ios" ? "padding" : "height"}
+                        style={styles.keyboardView}
+                    >
+                        <View 
+                            style={styles.modal}
+                            lightColor="#FFFFFF"
+                            darkColor="#1F2937"
+                        >
+                            <View style={styles.header}>
+                                <Text style={styles.title}>Add New Group</Text>
+                                <TouchableOpacity onPress={onClose}>
+                                    <Ionicons name="close" size={24} color={colorScheme === 'dark' ? '#fff' : '#000'} />
                                 </TouchableOpacity>
                             </View>
-                        ) : (
-                            <TouchableOpacity
-                                style={styles.addImageButton}
-                                onPress={() => setShowImageOptions(true)}
-                            >
-                                <Ionicons name="image-outline" size={24} color={accentColor} />
-                                <Text style={[styles.addImageText, { color: accentColor }]}>
-                                    Add Group Image
-                                </Text>
-                            </TouchableOpacity>
-                        )}
-                    </View>
 
-                    {error ? <Text style={styles.errorText}>{error}</Text> : null}
+                            <View style={styles.inputContainer}>
+                                <Text style={styles.label}>Group Name</Text>
+                                <TextInput
+                                    style={[styles.input, { color: colorScheme === 'dark' ? '#fff' : '#000' }]}
+                                    value={name}
+                                    onChangeText={setName}
+                                    placeholder="Enter group name"
+                                    placeholderTextColor={colorScheme === 'dark' ? '#aaa' : '#999'}
+                                />
+                            </View>
 
-                    <View style={styles.buttonRow}>
-                        <TouchableOpacity
-                            style={[styles.button, styles.cancelButton]}
-                            onPress={onClose}
-                            disabled={isLoading}
-                        >
-                            <Text style={styles.cancelText}>Cancel</Text>
-                        </TouchableOpacity>
+                            <View style={styles.inputContainer}>
+                                <Text style={styles.label}>Description</Text>
+                                <TextInput
+                                    style={[
+                                        styles.input,
+                                        styles.textArea,
+                                        { color: colorScheme === 'dark' ? '#fff' : '#000' }
+                                    ]}
+                                    value={description}
+                                    onChangeText={setDescription}
+                                    placeholder="Enter description"
+                                    placeholderTextColor={colorScheme === 'dark' ? '#aaa' : '#999'}
+                                    multiline
+                                    numberOfLines={4}
+                                    textAlignVertical="top"
+                                />
+                            </View>
 
-                        <TouchableOpacity
-                            style={[styles.button, { backgroundColor: accentColor }]}
-                            onPress={handleCreateGroup}
-                            disabled={isLoading}
-                        >
-                            {isLoading ? (
-                                <ActivityIndicator color="#fff" />
-                            ) : (
-                                <Text style={styles.buttonText}>Create</Text>
-                            )}
-                        </TouchableOpacity>
-                    </View>
+                            <View style={styles.inputContainer}>
+                                <Text style={styles.label}>Group Image</Text>
+                                
+                                {imageUri ? (
+                                    <View style={styles.imagePreviewContainer}>
+                                        <Image 
+                                            source={{ uri: imageUri }} 
+                                            style={styles.imagePreview} 
+                                            resizeMode="cover"
+                                        />
+                                        <TouchableOpacity 
+                                            style={styles.changeImageButton}
+                                            onPress={() => setShowImageOptions(true)}
+                                        >
+                                            <Text style={styles.changeImageText}>Change Image</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                ) : (
+                                    <TouchableOpacity
+                                        style={styles.addImageButton}
+                                        onPress={() => setShowImageOptions(true)}
+                                    >
+                                        <Ionicons name="image-outline" size={24} color={accentColor} />
+                                        <Text style={[styles.addImageText, { color: accentColor }]}>
+                                            Add Group Image
+                                        </Text>
+                                    </TouchableOpacity>
+                                )}
+                            </View>
+
+                            {error ? <Text style={styles.errorText}>{error}</Text> : null}
+
+                            <View style={styles.buttonRow}>
+                                <TouchableOpacity
+                                    style={[styles.button, styles.cancelButton]}
+                                    onPress={onClose}
+                                    disabled={isLoading}
+                                >
+                                    <Text style={styles.cancelText}>Cancel</Text>
+                                </TouchableOpacity>
+
+                                <TouchableOpacity
+                                    style={[styles.button, { backgroundColor: accentColor }]}
+                                    onPress={handleCreateGroup}
+                                    disabled={isLoading}
+                                >
+                                    {isLoading ? (
+                                        <ActivityIndicator color="#fff" />
+                                    ) : (
+                                        <Text style={styles.buttonText}>Create</Text>
+                                    )}
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    </KeyboardAvoidingView>
                 </View>
-            </View>
+            </TouchableWithoutFeedback>
             <ImagePickerModal
-                modalVisible={showImageOptions}
-                onClose={() => setShowImageOptions(false)}
-                onGalleryPress={handleChooseFromGallery}
-                onRemovePress={handleRemoveImage}
-                hasExistingImage={!!imageUri}
-                title="Add a Group Image"
+                    modalVisible={showImageOptions}
+                    onClose={() => setShowImageOptions(false)}
+                    onGalleryPress={handleChooseFromGallery}
+                    onRemovePress={handleRemoveImage}
+                    hasExistingImage={!!imageUri}
+                    title="Add a Group Image"
             />
         </Modal>
     );
@@ -247,6 +265,9 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         backgroundColor: 'rgba(0,0,0,0.5)',
         padding: 20,
+    },
+    keyboardView: {
+        width: '100%',
     },
     modal: {
         width: '100%',
