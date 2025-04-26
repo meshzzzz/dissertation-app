@@ -21,6 +21,7 @@
     "@react-navigation/native": "^7.0.14",
     "axios": "^1.7.9",
     "cloudinary-react-native": "^1.0.1",
+    "date-fns": "^4.1.0",
     "expo": "~52.0.30",
     "expo-dev-client": "~5.0.14",
     "expo-font": "~13.0.4",

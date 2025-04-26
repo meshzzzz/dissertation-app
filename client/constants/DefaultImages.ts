@@ -1,0 +1,1 @@
+export const DEFAULT_PFP = 'https://res.cloudinary.com/dtey1y2fw/image/upload/v1745352913/pfp_rwmsby.jpg';

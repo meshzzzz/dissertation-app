@@ -26,11 +26,7 @@ interface AddGroupModalProps {
     onSuccess: () => void;
 }
 
-const AddGroupModal: React.FC<AddGroupModalProps> = ({
-    modalVisible,
-    onClose,
-    onSuccess
-}) => {
+const AddGroupModal = ({modalVisible, onClose, onSuccess}: AddGroupModalProps) => {
     const colorScheme = useColorScheme();
     const accentColor = Colors[colorScheme ?? 'light'].secondary;
     const { authState } = useAuth();

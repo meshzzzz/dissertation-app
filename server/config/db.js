@@ -14,5 +14,6 @@ mongoose
 // models
 require("../models/User");
 require("../models/Group");
+require("../models/Post");
 
 module.exports = mongoose;

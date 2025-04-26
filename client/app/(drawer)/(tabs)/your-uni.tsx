@@ -1,5 +1,4 @@
 import { StyleSheet } from 'react-native';
-import EditScreenInfo from '@/components/EditScreenInfo';
 import { Text, View } from '@/components/Themed';
 import { useEffect, useState } from 'react';
 import { API_URL, useAuth } from '@/context/AuthContext';
@@ -30,7 +29,6 @@ export default function UniScreen() {
     <View style={styles.container}>
       <Text style={styles.title}>Your University</Text>
       <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-      <EditScreenInfo path="app/(tabs)/your-uni.tsx" />
     </View>
   );
 }
