@@ -9,14 +9,14 @@ type AuthButtonProps = {
     textStyle?: TextStyle;
 };
 
-export const AuthButton: React.FC<AuthButtonProps> = ({
+export const AuthButton = ({
     onPress,
     title,
     isLoading = false,
     disabled = false,
     style,
     textStyle,
-}) => {
+}: AuthButtonProps) => {
     return (
         <TouchableOpacity
             style={[

@@ -12,14 +12,7 @@ import ImagePickerModal from '@/components/images/ImagePickerModal';
 import EditProfileModal from '@/components/profile/EditProfileModal';
 import Popup from '@/components/Popup';
 import { COUNTRIES } from '@/constants/CountryData';
-
-interface Post {
-    id: number;
-    title: string;
-    date: string;
-    time: string;
-    tag: string;
-  }
+import PostsContainer from '@/components/profile/PostsContainer';
 
 export default function Profile() {
     const { authState } = useAuth();
@@ -48,7 +41,6 @@ export default function Profile() {
           campus: string;
           accomodation: string;
         };
-        posts: Post[]; 
       }>({
         name: 'Loading...',
         program: '',
@@ -57,8 +49,7 @@ export default function Profile() {
           country: '',
           campus: '',
           accomodation: ''
-        },
-        posts: []
+        }
       });
     const [loading, setLoading] = useState(true);
 
@@ -102,11 +93,6 @@ export default function Profile() {
                         campus: response.data?.data?.campus || 'Mile End',
                         accomodation: response.data?.data?.accomodation || 'Maurice Court'
                     },
-                    posts: response.data?.posts || [
-                        { id: 1, title: 'Skeleton Cats?', date: '1st Jan', time: '3am', tag: 'Mile End' },
-                        { id: 2, title: 'Kikuo concert...', date: '7th Feb', time: '2:43pm', tag: 'Vocaloid' },
-                        { id: 3, title: 'Do I look like the guy...', date: '23rd Mar', time: '11pm', tag: 'Film' }
-                    ]
                 });
             } catch (error) {
                 console.error("Error fetching user data:", error);
@@ -450,34 +436,7 @@ export default function Profile() {
                 </View>
 
                 {/* posts section */}
-                <View style={styles.postsSection}>
-                    <Text style={styles.postsSectionTitle}>My posts</Text>
-                    <ScrollView 
-                        horizontal={true}
-                        showsHorizontalScrollIndicator={false}
-                        contentContainerStyle={{ paddingRight: 20 }}
-                        style={styles.postsScrollView}
-                    >
-                        {userData.posts.map((post, index) => (
-                            <TouchableOpacity 
-                                key={post.id} 
-                                style={[
-                                    styles.postCard,
-                                    { backgroundColor: colors.background }
-                                ]}>
-                                <View style={{ backgroundColor: 'transparent' }}>
-                                    <Text style={styles.postTitle}>{post.title}</Text>
-                                    <Text style={styles.postDate}>{post.date} • {post.time}</Text>
-                                </View>
-                                <View style={[
-                                    styles.postTag,
-                                    { backgroundColor: accentColor }]}>
-                                    <Text style={styles.postTagText}>{post.tag}</Text>
-                                </View>
-                            </TouchableOpacity>
-                        ))}
-                    </ScrollView>
-                </View>
+                <PostsContainer token={authState?.token || null} />
             </View>
 
             <ImagePickerModal 

@@ -6,7 +6,7 @@ const Group = mongoose.model('Group');
 const Post = mongoose.model('Post');
 const jwt = require('jsonwebtoken');
 
-// format post data for response
+// format post data for response to client
 const formatPost = (post) => ({
     id: post._id,
     title: post.title,
@@ -69,9 +69,9 @@ router.post("/posts", async (req, res) => {
         // create the post
         const newPost = await Post.create({
             author: user._id,
-            title: title || undefined, // Only include if provided
+            title: title || undefined, 
             content,
-            group: groupId || undefined, // Only include if provided
+            group: groupId || undefined,
             createdAt: new Date()
         });
         
@@ -81,7 +81,7 @@ router.post("/posts", async (req, res) => {
             await newPost.populate('group', 'name');
         }
 
-        const formattedPosts = posts.map(formatPostForResponse);
+        const formattedPosts = formatPost(newPost);
 
         return res.send({ status: "ok", data: formattedPosts });
     } catch (error) {
@@ -110,7 +110,7 @@ router.get("/groups/:groupId/posts", async (req, res) => {
             .populate('group', 'name');
         
         // format post data
-        const formattedPosts = posts.map(formatPostForResponse);
+        const formattedPosts = posts.map(formatPost);
         
         return res.send({ status: "ok", data: formattedPosts });
     } catch (error) {
@@ -146,12 +146,75 @@ router.get("/posts/feed", async (req, res) => {
             .populate('group', 'name');
         
         // format post data
-        const formattedPosts = posts.map(formatPostForResponse);
+        const formattedPosts = posts.map(formatPost);
         
         return res.send({ status: "ok", data: formattedPosts });
     } catch (error) {
         console.error("Error fetching feed posts:", error);
         return res.send({ status: "error", data: "Error fetching feed posts" });
+    }
+});
+
+// get posts for a specific user
+router.get("/users/:userId/posts", async (req, res) => {
+    const { userId } = req.params;
+    
+    try {
+        // check if user exists
+        const user = await User.findById(userId);
+        if (!user) return res.send({ status: "error", data: "User not found" });
+        
+        const { limit, skip } = getPaginationSettings(req);
+        
+        // get posts
+        const posts = await Post.find({ author: userId })
+            .sort({ createdAt: -1 }) // Newest first
+            .skip(skip)
+            .limit(parseInt(limit))
+            .populate('author', 'firstName lastName preferredName profileImage')
+            .populate('group', 'name');
+        
+        // format post data
+        const formattedPosts = posts.map(formatPost);
+        
+        return res.send({ status: "ok", data: formattedPosts });
+    } catch (error) {
+        console.error("Error fetching user posts:", error);
+        return res.send({ status: "error", data: "Error fetching user posts" });
+    }
+});
+
+// get current user's posts
+router.get("/posts/my", async (req, res) => {
+    const { token } = req.query;
+    
+    try {
+        // verify user token
+        const decoded = verifyToken(token);
+        if (!decoded) return res.send({ status: "error", data: "Invalid token" });
+        
+        const userEmail = decoded.email;
+        const user = await User.findOne({ email: userEmail });
+        
+        if (!user) return res.send({ status: "error", data: "User not found" });
+        
+        const { limit, skip } = getPaginationSettings(req);
+        
+        // get posts
+        const posts = await Post.find({ author: user._id })
+            .sort({ createdAt: -1 }) // newest first
+            .skip(skip)
+            .limit(parseInt(limit))
+            .populate('author', 'firstName lastName preferredName profileImage')
+            .populate('group', 'name');
+        
+        // format post data
+        const formattedPosts = posts.map(formatPost);
+        
+        return res.send({ status: "ok", data: formattedPosts });
+    } catch (error) {
+        console.error("Error fetching user posts:", error);
+        return res.send({ status: "error", data: "Error fetching user posts" });
     }
 });
 
