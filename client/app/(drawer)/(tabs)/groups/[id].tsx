@@ -7,7 +7,7 @@ import {
   TouchableOpacity 
 } from 'react-native';
 import { Text, View } from '@/components/Themed';
-import { Tabs, useLocalSearchParams, useNavigation } from 'expo-router';
+import { Stack, useLocalSearchParams } from 'expo-router';
 import { useAuth, API_URL } from '@/context/AuthContext';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
@@ -93,11 +93,13 @@ export default function GroupDetail() {
 
     return (
         <SafeAreaView style={styles.container}>
-            <Tabs.Screen 
-                options={{
-                    title: group.name,
-                }} 
-            />
+            {group && (
+                <Stack.Screen 
+                    options={{ 
+                        title: group.name,
+                    }} 
+                />
+            )}
             <ScrollView style={styles.scrollView}>
                 {/* group header */}
                 <View style={styles.header}>
