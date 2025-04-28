@@ -607,50 +607,6 @@ const styles = StyleSheet.create({
         flexWrap: 'wrap',
         maxWidth: '70%',
     },
-    postsSection: {
-        width: '100%',
-        paddingLeft: 20,
-    },
-    postsSectionTitle: {
-        fontSize: 15,
-        fontWeight: 'bold',
-        marginBottom: 16,
-        marginTop: 16,
-        alignSelf: 'flex-start',
-        color: '#fff',
-    },
-    postsScrollView: {
-        width: '100%',
-    },
-    postCard: {
-        marginRight: 16,
-        borderRadius: 12,
-        padding: 14,
-        height: 125,
-        width: 125,
-        flexDirection: 'column',
-        justifyContent: 'space-between',
-    },
-    postTitle: {
-        fontSize: 16,
-        fontWeight: 'bold',
-    },
-    postDate: {
-        fontSize: 10,
-        color: '#888',
-        marginTop: 8,
-    },
-    postTag: {
-        borderRadius: 20,
-        paddingHorizontal: 12,
-        paddingVertical: 4,
-        alignSelf: 'flex-start',
-        marginTop: 18,
-    },
-    postTagText: {
-        fontSize: 10,
-        color: '#fff',
-    },
 })
 
 

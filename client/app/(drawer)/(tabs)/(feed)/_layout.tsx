@@ -2,7 +2,7 @@ import { Stack } from 'expo-router';
 import { DrawerToggleButton } from '@react-navigation/drawer';
 import BackButton from '@/components/BackButton';
 
-export default function GroupsLayout() {
+export default function FeedLayout() {
     return (
         <Stack
             screenOptions={{
@@ -13,16 +13,9 @@ export default function GroupsLayout() {
             <Stack.Screen 
                 name="index" 
                 options={{ 
-                    title: 'Groups', 
+                    title: 'Feed', 
                     headerLeft: () => <DrawerToggleButton />
                 }} 
-            />
-            <Stack.Screen 
-                name="[id]" 
-                options={{ 
-                    title: '',
-                    headerLeft: () => <BackButton />
-                }}  
             />
             <Stack.Screen 
                 name="posts/[id]" 

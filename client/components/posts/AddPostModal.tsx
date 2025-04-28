@@ -172,10 +172,9 @@ const styles = StyleSheet.create({
         padding: 20,
     },
     keyboardView: {
-        
+        width: '100%',
     },
     modal: {
-        width: '100%',
         borderRadius: 16,
         padding: 20,
     },

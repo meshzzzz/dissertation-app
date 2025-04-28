@@ -218,4 +218,31 @@ router.get("/posts/my", async (req, res) => {
     }
 });
 
+// get a specific post by id
+router.get("/posts/:postId", async (req, res) => {
+    const { postId } = req.params;
+    const { token } = req.query;
+    
+    try {
+        // verify user token
+        const decoded = verifyToken(token);
+        if (!decoded) return res.send({ status: "error", data: "Invalid token" });
+        
+        // get post
+        const post = await Post.findById(postId)
+            .populate('author', 'firstName lastName preferredName profileImage')
+            .populate('group', 'name');
+        
+        if (!post) return res.send({ status: "error", data: "Post not found" });
+        
+        // format post data
+        const formattedPost = formatPost(post);
+        
+        return res.send({ status: "ok", data: formattedPost });
+    } catch (error) {
+        console.error("Error fetching post:", error);
+        return res.send({ status: "error", data: "Error fetching post" });
+    }
+});
+
 module.exports = router;

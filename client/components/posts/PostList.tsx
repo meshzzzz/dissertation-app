@@ -22,11 +22,11 @@ const PostList = ({
 
     // handle post press
     const handlePostPress = (postId: string) => {
-    if (groupId) {
-        router.push(`/groups/${groupId}/posts/${postId}`);
-    } else {
-        router.push(`/posts/${postId}`);
-    }
+        if (showInFeed) {
+            router.push(`/posts/${postId}`);
+        } else {
+            router.push(`/groups/posts/${postId}`);
+        }
     };
 
     // handle like press
@@ -37,11 +37,7 @@ const PostList = ({
 
     // handle comment press - open post (TODO)
     const handleCommentPress = (postId: string) => {
-    if (groupId) {
         router.push(`/groups/${groupId}/posts/${postId}?showComments=true`);
-    } else {
-        router.push(`/posts/${postId}?showComments=true`);
-    }
     };
 
     if (posts.length === 0) {

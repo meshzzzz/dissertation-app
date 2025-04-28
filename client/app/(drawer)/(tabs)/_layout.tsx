@@ -39,10 +39,11 @@ export default function TabLayout() {
                 }
             }}>
             <Tabs.Screen
-                name="index"
+                name="(feed)"
                 options={{
                     title: 'Feed',
                     tabBarIcon: ({ color }) => <TabBarIcon name="home" color={color} />,
+                    headerShown: false
                 }}
             />
             <Tabs.Screen
