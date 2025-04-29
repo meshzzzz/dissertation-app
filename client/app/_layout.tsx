@@ -7,6 +7,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import { useColorScheme } from '@/components/useColorScheme';
 import { AuthProvider } from '@/context/AuthContext';
+import { PostsProvider } from "@/context/PostContext";
 import { View, ActivityIndicator } from 'react-native';
 import "../global.css";
 import Colors from "@/constants/Colors";
@@ -76,7 +77,9 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={colorScheme === 'dark' ? CustomDarkTheme : CustomLightTheme}>   
         <AuthProvider>
-            <Slot />
+            <PostsProvider>
+                <Slot />
+            </PostsProvider>
         </AuthProvider>
     </ThemeProvider>
   );

@@ -17,6 +17,7 @@ import Colors from '@/constants/Colors';
 import { useAuth, API_URL } from '@/context/AuthContext';
 import axios from 'axios';
 import { Post } from '@/types/Post';
+import { usePosts } from '@/context/PostContext';
 
 interface AddPostModalProps {
     visible: boolean;
@@ -33,6 +34,7 @@ const AddPostModal = ({ visible, onClose, onPostCreated, groupId }: AddPostModal
     const { authState } = useAuth();
     const colorScheme = useColorScheme();
     const accentColor = Colors[colorScheme ?? 'light'].secondary;
+    const { fetchFeedPosts, fetchGroupPosts } = usePosts();
 
     const handleSubmit = async () => {
         // validate input
@@ -60,6 +62,10 @@ const AddPostModal = ({ visible, onClose, onPostCreated, groupId }: AddPostModal
             if (response.data.status === 'ok') {
                 // pass new post back to parent component
                 onPostCreated(response.data.data);
+
+                // refresh posts in context
+                fetchGroupPosts(groupId);
+                fetchFeedPosts();
                 
                 // reset form and close modal
                 setTitle('');

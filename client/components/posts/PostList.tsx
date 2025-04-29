@@ -1,21 +1,18 @@
 import React from 'react';
-import { View, StyleSheet, FlatList } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { Text } from '@/components/Themed';
 import PostCard from './PostCard';
-import { Post } from '@/types/Post';
 import { useRouter } from 'expo-router';
 
 interface PostListProps {
-    posts: Post[];
+    postIds: string[];
     showInFeed?: boolean;
-    groupId?: string;
     emptyMessage?: string; 
 }
 
 const PostList = ({
-    posts,
+    postIds,
     showInFeed = false,
-    groupId,
     emptyMessage = "No posts yet. Be the first to share something!",
 }: PostListProps) => {
     const router = useRouter();
@@ -29,42 +26,28 @@ const PostList = ({
         }
     };
 
-    // handle like press
-    const handleLikePress = (postId: string) => {
-        console.log(`Like post: ${postId}`);
-        // TODO: implement like functionality
-    };
-
     // handle comment press - open post (TODO)
     const handleCommentPress = (postId: string) => {
-        router.push(`/groups/${groupId}/posts/${postId}?showComments=true`);
+        // not done yet
     };
 
-    if (posts.length === 0) {
+    if (postIds.length === 0) {
         return (
             <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>{emptyMessage}</Text>
+                <Text style={styles.emptyText}>{emptyMessage}</Text>
             </View>
         );
     }
 
     return (
         <View>
-            {posts.map((item) => (
+            {postIds.map(id => (
                 <PostCard
-                    key={item.id}
-                    id={item.id}
-                    title={item.title}
-                    content={item.content}
-                    createdAt={item.createdAt}
-                    author={item.author}
-                    group={item.group}
-                    likes={item.likes}
-                    comments={item.comments}
+                    key={id}
+                    id={id}
                     showInFeed={showInFeed}
-                    onPress={() => handlePostPress(item.id)}
-                    onLike={() => handleLikePress(item.id)}
-                    onComment={() => handleCommentPress(item.id)}
+                    onPress={() => handlePostPress(id)}
+                    onComment={() => handleCommentPress(id)}
                 />
             ))}
         </View>

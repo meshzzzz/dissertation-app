@@ -1,43 +1,53 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { Text } from '@/components/Themed';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
 import { formatDistanceToNow } from 'date-fns';
-import { Post as PostType } from '@/types/Post';
 import { DEFAULT_PFP } from '@/constants/DefaultImages';
+import { usePosts } from '@/context/PostContext';
 
-interface PostProps extends PostType {
+interface PostProps {
+    id: string;
     showInFeed?: boolean;
     onPress?: () => void;
-    onLike?: () => void;
-    onComment?: () => void; 
+    onComment?: () => void;
+    isInPostPage?: boolean;
 }
 
 const PostCard = ({
-    title,
-    content,
-    createdAt,
-    author,
-    group,
-    likes = 0,
-    comments = 0,
+    id,
     showInFeed = false,
     onPress,
-    onLike,
-    onComment
+    onComment,
+    isInPostPage = false
 }: PostProps) => {
+    const { postsById, toggleLike } = usePosts();
     const colorScheme = useColorScheme();
     const textColor = Colors[colorScheme ?? 'light'].text;
     const secondaryColor = Colors[colorScheme ?? 'light'].secondary;
+    const [isLikeLoading, setIsLikeLoading] = useState(false);
+    
+    // get post data from context
+    const post = postsById[id];
+    if (!post) return null;
+    const { title, content, createdAt, author, group, comments, likes, userHasLiked } = post;
 
-    return (
-        <TouchableOpacity 
-            style={styles.container}
-            onPress={onPress}
-            activeOpacity={onPress ? 0.7 : 1}
-        >
+    // handle like button press
+    const handleLike = async () => {
+        if (isLikeLoading) return;
+        
+        setIsLikeLoading(true);
+        try {
+            await toggleLike(id);
+        } finally {
+            setIsLikeLoading(false);
+        }
+    };
+
+    const cardContent = (
+        <>
             {/* title and time */}
             <View style={styles.header}>
                 <View style={styles.headerLeft}>
@@ -63,11 +73,20 @@ const PostCard = ({
             {/* footer with author and actions */}
             <View style={styles.footer}>
                 <View style={styles.actions}>
-                    <TouchableOpacity style={styles.actionButton} onPress={onLike}>
-                        <Ionicons name="heart-outline" size={20} color={textColor} />
-                        <Text style={styles.actionText}>{likes}</Text>
+                    <TouchableOpacity
+                        style={styles.actionButton}
+                        onPress={handleLike}
+                        disabled={isLikeLoading}
+                    >
+                        <Ionicons
+                            name={userHasLiked ? 'heart' : 'heart-outline'}
+                            size={20}
+                            color={textColor}
+                        />
+                        <Text style={[styles.actionText, userHasLiked ? { color: textColor } : {}]}>
+                            {likes}
+                        </Text>
                     </TouchableOpacity>
-                    
                     <TouchableOpacity style={styles.actionButton} onPress={onComment}>
                         <Ionicons name="chatbubble-outline" size={20} color={textColor} />
                         <Text style={styles.actionText}>{comments}</Text>
@@ -82,8 +101,22 @@ const PostCard = ({
                     />
                 </View>
             </View>
-        </TouchableOpacity>
+        </>
     );
+
+    if (isInPostPage) {
+        return <View style={styles.container}>{cardContent}</View>;
+    } else {
+        return (
+            <TouchableOpacity 
+                style={styles.container}
+                onPress={onPress}
+                activeOpacity={onPress ? 0.7 : 1}
+            >
+                {cardContent}
+            </TouchableOpacity>
+        )
+    }
 };
 
 const styles = StyleSheet.create({

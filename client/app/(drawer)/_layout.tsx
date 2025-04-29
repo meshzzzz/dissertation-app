@@ -37,6 +37,17 @@ export default function DrawerLayout() {
                         )
                     }}
                 />
+                <Drawer.Screen 
+                    name='about' 
+                    options={{
+                        drawerLabel: 'About',
+                        headerTitle: 'About',
+                        headerShown: true,
+                        drawerIcon: ({ size, color}) => (
+                            <Ionicons name='information-circle-outline' size={size} color={color} /> 
+                        )
+                    }}
+                />
             </Drawer>
         </GestureHandlerRootView>
     );

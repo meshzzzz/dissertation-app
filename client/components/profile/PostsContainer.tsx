@@ -4,40 +4,27 @@ import { Text, View } from '@/components/Themed';
 import { useTheme } from '@react-navigation/native';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
-import { Post, fetchMyPosts } from '@/types/Post';
+import { usePosts } from '@/context/PostContext';
 
-interface PostsContainerProps {
-  token: string | null;
-}
-
-const PostsContainer = ({ token }: PostsContainerProps) => {
-    const [posts, setPosts] = useState<Post[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+const PostsContainer = () => {
+    const { 
+        myPosts, 
+        postsById, 
+        loading, 
+        errors, 
+        fetchMyPosts 
+    } = usePosts();
     const { colors } = useTheme();
     const colorScheme = useColorScheme();
     const accentColor = Colors[colorScheme ?? 'light'].secondary;
 
     useEffect(() => {
-        const loadPosts = async () => {
-            if (!token) return;
-            
-            setLoading(true);
-            try {
-                const fetchedPosts = await fetchMyPosts(token);
-                setPosts(fetchedPosts);
-                } catch (err) {
-                setError('Failed to load posts');
-                console.error(err);
-            } finally {
-                setLoading(false);
-            }
-        };
+        fetchMyPosts();
+    }, []);
 
-        loadPosts();
-    }, [token]);
+    const postObjects = myPosts.map(id => postsById[id]);
 
-    if (loading) {
+    if (loading.myPosts) {
         return (
             <View style={styles.postsSection}>
                 <Text style={styles.postsSectionTitle}>My posts</Text>
@@ -48,11 +35,11 @@ const PostsContainer = ({ token }: PostsContainerProps) => {
         );
     }
 
-    if (error) {
+    if (errors.myPosts) {
         return (
             <View style={styles.postsSection}>
                 <Text style={styles.postsSectionTitle}>My posts</Text>
-                <Text style={styles.errorText}>{error}</Text>
+                <Text style={styles.errorText}>{errors.myPosts}</Text>
             </View>
         );
     }
@@ -86,7 +73,7 @@ const PostsContainer = ({ token }: PostsContainerProps) => {
         <View style={styles.postsSection}>
             <Text style={styles.postsSectionTitle}>My posts</Text>
             
-            {posts.length === 0 ? (
+            {postObjects.length === 0 ? (
                 <Text style={styles.noPostsText}>No posts yet</Text>
             ) : (
                 <ScrollView 
@@ -95,7 +82,7 @@ const PostsContainer = ({ token }: PostsContainerProps) => {
                     contentContainerStyle={{ paddingRight: 20 }}
                     style={styles.postsScrollView}
                 >
-                    {posts.map((post) => (
+                    {postObjects.map((post) => (
                         <TouchableOpacity 
                             key={post.id} 
                             style={[

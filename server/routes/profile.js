@@ -1,24 +1,15 @@
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
+const authenticate = require('../middleware/authentication');
 const User = mongoose.model('User');
-const jwt = require('jsonwebtoken');
 const upload = require('../middleware/upload');
 const fs = require('fs');
 const cloudinary = require('../config/cloudinary');
 
 const DEFAULT_PROFILE_PICTURE = 'https://res.cloudinary.com/dtey1y2fw/image/upload/v1745352913/pfp_rwmsby.jpg';
 
-// helper function to verify token
-const verifyToken = (token) => {
-    try {
-        return jwt.verify(token, process.env.JWT_SECRET);
-    } catch (error) {
-        return null;
-    }
-};
-
-// helper function to apply default profile image
+// apply default profile image if not set
 const applyDefaultProfileImage = (user) => {
     if (!user) return null;
     return {
@@ -28,15 +19,9 @@ const applyDefaultProfileImage = (user) => {
 };
   
 // get user data
-router.post("/userdata", async (req, res) => {
-    const { token } = req.body;
+router.post("/userdata", authenticate, async (req, res) => {
     try {
-        const decoded = verifyToken(token);
-        if (!decoded) return res.send({ status: "error", data: "Invalid token" });
-
-        const user = await User.findOne({ email: decoded.email });
-        if (!user) return res.send({ status: "error", data: "User not found" });
-
+        const user = req.user;
         const userWithImage = applyDefaultProfileImage(user);
         return res.send({ status: "ok", data: userWithImage });
     } catch (error) {
@@ -46,21 +31,18 @@ router.post("/userdata", async (req, res) => {
 });
 
 // update profile
-router.post("/update-profile", async (req, res) => {
-    const { token, preferredName, aboutMe, country, campus, accomodation } = req.body;
+router.post("/update-profile", authenticate, async (req, res) => {
+    const { preferredName, aboutMe, country, campus, accomodation } = req.body;
     try {
-        const decoded = verifyToken(token);
-        if (!decoded) return res.send({ status: "error", data: "Invalid token" });
-
+        const user = req.user;
         const validatedAboutMe = aboutMe?.length > 120 ? aboutMe.substring(0, 120) : aboutMe;
 
-        const updatedUser = await User.findOneAndUpdate(
-            { email: decoded.email },
-            { preferredName, aboutMe: validatedAboutMe, country, campus, accomodation },
-            { new: true }
-        );
-
-        if (!updatedUser) return res.send({ status: "error", data: "User not found" });
+        user.preferredName = preferredName;
+        user.aboutMe = validatedAboutMe;
+        user.country = country;
+        user.campus = campus;
+        user.accomodation = accomodation;
+        await user.save();
 
         return res.send({ status: "ok", data: "Profile updated successfully" });
     } catch (error) {
@@ -70,16 +52,10 @@ router.post("/update-profile", async (req, res) => {
 });
 
 // upload profile image
-router.post("/profile-image", upload.single('image'), async (req, res) => {
+router.post("/profile-image",authenticate, upload.single('image'), async (req, res) => {
     try {
-        const { token } = req.body;
-        const decoded = verifyToken(token);
-        if (!decoded) return res.send({ status: "error", data: "Invalid token" });
-
+        const user = req.user;
         if (!req.file) return res.send({ status: "error", data: "No image provided" });
-
-        const user = await User.findOne({ email: decoded.email });
-        if (!user) return res.send({ status: "error", data: "User not found" });
 
         const result = await cloudinary.uploader.upload(req.file.path, {
             upload_preset: 'profile_pictures',
@@ -101,16 +77,9 @@ router.post("/profile-image", upload.single('image'), async (req, res) => {
 });
 
 // remove profile image
-router.post("/remove-profile-image", async (req, res) => {
-    const { token } = req.body;
-
+router.post("/remove-profile-image", authenticate, async (req, res) => {
     try {
-        const decoded = verifyToken(token);
-        if (!decoded) return res.send({ status: "error", data: "Invalid token" });
-
-        const user = await User.findOne({ email: decoded.email });
-        if (!user) return res.send({ status: "error", data: "User not found" });
-
+        const user = req.user;
         if (user.profileImage) {
             const publicId = `profile_pictures/user_${user._id}`;
             await cloudinary.uploader.destroy(publicId);

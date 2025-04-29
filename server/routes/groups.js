@@ -1,24 +1,15 @@
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
+const authenticate = require('../middleware/authentication');
 const User = mongoose.model('User');
 const Group = mongoose.model('Group');
-const jwt = require('jsonwebtoken');
 const upload = require('../middleware/upload');
 const isSuperuser = require('../middleware/isSuperuser');
 const fs = require('fs');
 const cloudinary = require('../config/cloudinary');
 
 const DEFAULT_GROUP_PICTURE = 'https://res.cloudinary.com/dtey1y2fw/image/upload/v1745500388/groupimg_zu73fp_c_fill_w_300_h_200_xefgsh.jpg';
-
-// helper function to verify token
-const verifyToken = (token) => {
-    try {
-        return jwt.verify(token, process.env.JWT_SECRET);
-    } catch (error) {
-        return null;
-    }
-};
 
 // get all groups
 router.get("/groups", async (req, res) => {
@@ -67,16 +58,9 @@ router.get("/groups/:id", async (req, res) => {
 });
 
 // get all groups for a specific user
-router.post("/user/groups", async (req, res) => {
-    const { token } = req.body;
-    
+router.post("/user/groups", authenticate, async (req, res) => { 
     try {
-        const decoded = verifyToken(token);
-        if (!decoded) return res.send({ status: "error", data: "Invalid token" });
-        
-        const userEmail = decoded.email;
-        const user = await User.findOne({ email: userEmail }).populate('groups');
-        
+        const user = await User.findById(req.user._id).populate('groups');
         if (!user) {
             return res.send({ status: "error", data: "User not found" });
         }
@@ -98,27 +82,17 @@ router.post("/user/groups", async (req, res) => {
 });
 
 // join a group
-router.post("/groups/join", async (req, res) => {
-    const { token, groupId } = req.body;
+router.post("/groups/join", authenticate, async (req, res) => {
+    const { groupId } = req.body;
+    const user = req.user;
     
     try {
-        const decoded = verifyToken(token);
-        if (!decoded) return res.send({ status: "error", data: "Invalid token" });
-        
-        const userEmail = decoded.email;
-        const user = await User.findOne({ email: userEmail });
-        
-        if (!user) return res.send({ status: "error", data: "User not found" });
- 
-        
         const group = await Group.findById(groupId);
         
         if (!group) return res.send({ status: "error", data: "Group not found" });
         
-        
         // check if user is already a member
         if (user.groups.includes(groupId)) return res.send({ status: "error", data: "User is already a member of this group" });
-        
         
         // add group to user's groups
         user.groups.push(groupId);
@@ -136,21 +110,12 @@ router.post("/groups/join", async (req, res) => {
 });
 
 // leave a group
-router.post("/groups/leave", async (req, res) => {
-    const { token, groupId } = req.body;
+router.post("/groups/leave", authenticate, async (req, res) => {
+    const { groupId } = req.body;
+    const user = req.user;
     
     try {
-        const decoded = verifyToken(token);
-        if (!decoded) return res.send({ status: "error", data: "Invalid token" });
-        
-        
-        const userEmail = decoded.email;
-        const user = await User.findOne({ email: userEmail });
-        
-        if (!user) return res.send({ status: "error", data: "User not found" });
-        
         const group = await Group.findById(groupId);
-        
         if (!group) return res.send({ status: "error", data: "Group not found" });
         
         // check if user is a member
@@ -174,12 +139,11 @@ router.post("/groups/leave", async (req, res) => {
 // SUPERUSER (me) ONLY ROUTES
 
 // create a new group
-router.post("/groups", isSuperuser, async (req, res) => {
+router.post("/groups", authenticate, isSuperuser, async (req, res) => {
     const { name, description, groupImage } = req.body;
     
     try {
         const existingGroup = await Group.findOne({ name });
-        
         if (existingGroup) return res.send({ status: "error", data: "A group with this name already exists" });
         
         const newGroup = await Group.create({
@@ -205,7 +169,7 @@ router.post("/groups", isSuperuser, async (req, res) => {
 });
 
 // update group details
-router.put("/groups/:id", isSuperuser, async (req, res) => {
+router.put("/groups/:id", authenticate, isSuperuser, async (req, res) => {
     const { id } = req.params;
     const { name, description, groupImage } = req.body;
     
@@ -237,8 +201,7 @@ router.put("/groups/:id", isSuperuser, async (req, res) => {
 });
 
 // add group image (currently used in creation, to also be used in editing)
-router.post("/groups/:id/image", isSuperuser, upload.single('image'), async (req, res) => {
-
+router.post("/groups/:id/image", authenticate, isSuperuser, upload.single('image'), async (req, res) => {
     try {
         const { id } = req.params;
         
@@ -268,7 +231,7 @@ router.post("/groups/:id/image", isSuperuser, upload.single('image'), async (req
 });
 
 // delete a group
-router.delete("/groups/:id", isSuperuser, async (req, res) => {
+router.delete("/groups/:id", authenticate, isSuperuser, async (req, res) => {
     const { id } = req.params;
     
     try {

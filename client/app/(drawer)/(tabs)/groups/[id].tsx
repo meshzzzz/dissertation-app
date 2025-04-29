@@ -14,10 +14,10 @@ import Colors from '@/constants/Colors';
 import axios from 'axios';
 import { Ionicons } from '@expo/vector-icons';
 import { Group } from '@/types/Group';
-import { Post } from '@/types/Post';
 import RoundedButton from '@/components/RoundedButton';
 import PostList from '@/components/posts/PostList';
 import AddPostModal from '@/components/posts/AddPostModal';
+import { usePosts } from '@/context/PostContext';
 
 export default function GroupDetail() {
     const params = useLocalSearchParams();
@@ -25,71 +25,85 @@ export default function GroupDetail() {
     const { authState } = useAuth();
     const colorScheme = useColorScheme();
 
-    const [loading, setLoading] = useState(true);
-    const [group, setGroup] = useState<Group | null>(null);
-    const [posts, setPosts] = useState<Post[]>([]);
-    const [error, setError] = useState<string | null>(null);
-    const [isAddPostModalVisible, setIsAddPostModalVisible] = useState(false);
+    const { 
+        groupPosts, 
+        loading, 
+        errors, 
+        fetchGroupPosts 
+    } = usePosts();
 
+    const [loadingGroup, setLoadingGroup] = useState(true);
+    const [group, setGroup] = useState<Group | null>(null);
+    const [groupError, setGroupError] = useState<string | null>(null);
+    const [isAddPostModalVisible, setIsAddPostModalVisible] = useState(false);
+    
     useEffect(() => {
-        // load group data and posts
-        const loadData = async () => {
+        // load group data
+        const loadGroupData = async () => {
             if (!authState?.token) return;
 
-            setLoading(true);
-            setError(null);
+            setLoadingGroup(true);
+            setGroupError(null);
 
             try {
                 // load group details
-                const groupResponse = await axios.get(`${API_URL}/groups/${groupId}`);
+                const groupResponse = await axios.get(`${API_URL}/groups/${groupId}`, {
+                    params: { token: authState.token }
+                });
                 
                 if (groupResponse.data.status === 'ok') {
                     setGroup(groupResponse.data.data);
-                    
-                    // load group posts
-                    const postsResponse = await axios.get(`${API_URL}/groups/${groupId}/posts`);
-                    
-                    if (postsResponse.data.status === 'ok') {
-                        setPosts(postsResponse.data.data);
-                    }
                 } else {
-                    setError('Failed to fetch group details');
+                    setGroupError('Failed to fetch group details');
                 }
             } catch (err) {
                 console.error('Error fetching group data:', err);
-                setError('Network error while fetching data');
+                setGroupError('Network error while fetching data');
             } finally {
-                setLoading(false);
+                setLoadingGroup(false);
             }
         };
 
-        loadData();
+        loadGroupData();
+
+        // load group posts
+        if (authState?.token) {
+            fetchGroupPosts(groupId);
+        }
     }, [groupId, authState]);
 
-    const handlePostCreated = (newPost: Post) => {
-        // add the new post to the beginning of the posts array
-        setPosts(prevPosts => [newPost, ...prevPosts]);
+    const handlePostCreated = () => {
+        // refetch group posts after creating a new post
+        fetchGroupPosts(groupId);
+        setIsAddPostModalVisible(false);
     };
 
-    if (loading) {
+    // get group post IDs
+    const postIds = groupPosts[groupId] || [];
+
+    // check if posts are loading
+    const isPostsLoading = loading.groups[groupId];
+    const postsError = errors.groups[groupId];
+
+    if (loadingGroup) {
         return (
             <SafeAreaView style={styles.container}>
-            <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color={Colors[colorScheme ?? 'light'].primary} />
-            </View>
+                <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color={Colors[colorScheme ?? 'light'].primary} />
+                </View>
             </SafeAreaView>
         );
     }
 
-    if (error || !group) {
+    if (groupError || !group) {
         return (
             <SafeAreaView style={styles.container}>
-            <View style={styles.errorContainer}>
-                <Text style={styles.errorText}>{error || 'Group not found'}</Text>
-            </View>
+                <View style={styles.errorContainer}>
+                    <Text style={styles.errorText}>{groupError || 'Group not found'}</Text>
+                </View>
             </SafeAreaView>
         );
-    }
+     }
 
     return (
         <SafeAreaView style={styles.container}>
@@ -134,13 +148,19 @@ export default function GroupDetail() {
                 {/* posts */}
                 <View style={styles.sectionContainer}>
                     <Text style={styles.sectionTitle}>Posts</Text>
-                    
-                    <PostList
-                        posts={posts}
-                        showInFeed={false}
-                        groupId={groupId}
-                        emptyMessage="No posts yet. Be the first to share something!"
-                    />
+                    {isPostsLoading ? (
+                        <View style={styles.loadingContainer}>
+                            <ActivityIndicator size="small" color={Colors[colorScheme ?? 'light'].primary} />
+                        </View>
+                    ) : postsError ? (
+                        <Text style={styles.errorText}>{postsError}</Text>
+                    ) : (
+                        <PostList
+                            postIds={postIds}
+                            showInFeed={false}
+                            emptyMessage="No posts yet. Be the first to share something!"
+                        />
+                    )}
                 </View>
             </ScrollView>
             
