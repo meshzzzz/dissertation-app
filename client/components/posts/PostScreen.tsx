@@ -1,10 +1,13 @@
-import React, { useEffect, useState } from 'react';
-import { View, ScrollView, ActivityIndicator, StyleSheet } from 'react-native';
+import React, { useEffect, useState, useRef } from 'react';
+import { View, ScrollView, ActivityIndicator, StyleSheet, KeyboardAvoidingView, Platform, TextInput } from 'react-native';
 import { Text } from '@/components/Themed';
 import PostCard from '@/components/posts/PostCard';
+import CommentCard from '../comments/CommentCard';
+import CommentInput from '../comments/CommentInput';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
 import { usePosts } from '@/context/PostContext';
+import { useComments } from '@/context/CommentContext';
 
 interface PostScreenProps {
     postId: string;
@@ -14,31 +17,79 @@ interface PostScreenProps {
 const PostScreen = ({ postId, showInFeed=false }: PostScreenProps) => {
     const colorScheme = useColorScheme();
     const { postsById, loading, errors, fetchPost } = usePosts();
+    const { 
+        commentsByPost, 
+        isLoadingComments, 
+        commentErrors, 
+        fetchComments, 
+        addComment 
+    } = useComments();
     const [isInitialLoading, setIsInitialLoading] = useState(true);
+    const [replyingTo, setReplyingTo] = useState<{ id: string, name: string } | null>(null);
+    const commentInputRef = useRef<TextInput>(null);
 
     useEffect(() => {
-        const loadPost = async () => {
+        const loadData = async () => {
             setIsInitialLoading(true);
             
             // if post not already in context, fetch it
             if (!postsById[postId]) {
               await fetchPost(postId);
             }
+
+            // fetch comments for this post
+            await fetchComments(postId);
             
             setIsInitialLoading(false);
           };
       
-          loadPost();
+          loadData();
     }, [postId]);
 
-    // get post from context
+    // get data from context
     const post = postsById[postId];
-
+    const comments = commentsByPost[postId] || [];
+    const isCommentsLoading = isLoadingComments[postId] || false;
+    const commentError = commentErrors[postId];
+    
     // get loading state
     const isLoading = isInitialLoading || loading.posts[postId];
 
     // get any error
     const error = errors.posts[postId];
+
+    // handle submitting a new comment
+    const handleSubmitComment = async (content: string) => {
+        if (replyingTo) {
+            // add reply
+            await addComment(postId, content, replyingTo.id);
+            setReplyingTo(null);
+        } else {
+            // add top-level comment
+            await addComment(postId, content);
+        }
+    };
+
+    // handle reply to comment
+    const handleReplyToComment = (commentId: string, authorName: string) => {
+        setReplyingTo({ id: commentId, name: authorName });
+        // Focus the input
+        if (commentInputRef.current) {
+            commentInputRef.current.focus();
+        }
+    };
+
+    // cancel replying
+    const handleCancelReply = () => {
+        setReplyingTo(null);
+    };
+
+    const handleCommentPress = () => {
+        // focus the comment input
+        if (commentInputRef.current) {
+            commentInputRef.current.focus();
+        }
+    };
 
     if (isLoading) {
         return (
@@ -60,26 +111,88 @@ const PostScreen = ({ postId, showInFeed=false }: PostScreenProps) => {
     }
 
     return (
-        <ScrollView style={styles.container}>
-            <PostCard
-                {...post}
-                onComment={() => console.log('Comment')}
-                isInPostPage={true}
-                showInFeed={showInFeed}
+        <KeyboardAvoidingView 
+            style={styles.container}
+            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+            keyboardVerticalOffset={Platform.OS === 'ios' ? 88 : 0}
+        >
+            <ScrollView style={styles.scrollContainer}>
+                {/* post */}
+                <PostCard
+                    id={postId}
+                    showInFeed={showInFeed}
+                    isInPostPage={true}
+                    onComment={handleCommentPress}
+                />
+                
+                {/* comments section */}
+                <View style={styles.commentsSection}>
+                    <Text style={styles.commentsTitle}>
+                        Comments {comments.length > 0 && `(${comments.length})`}
+                    </Text>
+                    
+                    {/* comment error */}
+                    {commentError && (
+                        <Text style={styles.errorText}>{commentError}</Text>
+                    )}
+                    
+                    {/* comments loading */}
+                    {isCommentsLoading && (
+                        <View style={styles.loadingCommentsContainer}>
+                            <ActivityIndicator 
+                                size="small" 
+                                color={Colors[colorScheme ?? 'light'].primary} 
+                            />
+                        </View>
+                    )}
+                    
+                    {/* no comments */}
+                    {!isCommentsLoading && comments.length === 0 && (
+                        <Text style={styles.noCommentsText}>No comments yet. Be the first to comment!</Text>
+                    )}
+                    
+                    {/* comments list */}
+                    {comments.map(comment => (
+                        <CommentCard
+                            key={comment.id}
+                            comment={comment}
+                            postId={postId}
+                            onReply={handleReplyToComment}
+                        />
+                    ))}
+                </View>
+            </ScrollView>
+        
+            {/* comment input */}
+            <CommentInput 
+                ref={commentInputRef}
+                onSubmit={handleSubmitComment}
+                placeholder={replyingTo ? "Write a reply..." : "Add a comment..."}
+                replyingTo={replyingTo?.name}
+                onCancelReply={handleCancelReply}
             />
-            
-            {/* comments section */}
-            <View style={styles.commentsSection}>
-                <Text style={styles.commentsTitle}>Comments</Text>
-                <Text style={styles.noCommentsText}>No comments yet</Text>
-            </View>
-        </ScrollView>
+        </KeyboardAvoidingView>
     );
 };
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        backgroundColor: '#fff',
+    },
+    scrollContainer: {
+        flex: 1,
+        padding: 16,
+    },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    errorContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
         padding: 16,
     },
     errorText: {
@@ -100,8 +213,12 @@ const styles = StyleSheet.create({
     },
     noCommentsText: {
         textAlign: 'center',
-        opacity: 0.7,
+        color: '#888',
         marginVertical: 20,
+    },
+    loadingCommentsContainer: {
+        alignItems: 'center',
+        paddingVertical: 20,
     }
 });
 

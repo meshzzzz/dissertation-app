@@ -8,6 +8,7 @@ import { useEffect } from 'react';
 import { useColorScheme } from '@/components/useColorScheme';
 import { AuthProvider } from '@/context/AuthContext';
 import { PostsProvider } from "@/context/PostContext";
+import { CommentProvider } from "@/context/CommentContext";
 import { View, ActivityIndicator } from 'react-native';
 import "../global.css";
 import Colors from "@/constants/Colors";
@@ -78,7 +79,9 @@ export default function RootLayout() {
     <ThemeProvider value={colorScheme === 'dark' ? CustomDarkTheme : CustomLightTheme}>   
         <AuthProvider>
             <PostsProvider>
-                <Slot />
+                <CommentProvider>
+                    <Slot />
+                </CommentProvider>
             </PostsProvider>
         </AuthProvider>
     </ThemeProvider>

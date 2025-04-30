@@ -46,6 +46,12 @@ const PostCard = ({
         }
     };
 
+    const handleCommentPress = () => {
+        if (onComment) {
+            onComment();
+        }
+    };
+
     const cardContent = (
         <>
             {/* title and time */}
@@ -81,13 +87,13 @@ const PostCard = ({
                         <Ionicons
                             name={userHasLiked ? 'heart' : 'heart-outline'}
                             size={20}
-                            color={textColor}
+                            color={userHasLiked ? '#F54E42' : textColor}
                         />
-                        <Text style={[styles.actionText, userHasLiked ? { color: textColor } : {}]}>
+                        <Text style={[styles.actionText, userHasLiked ? { color: '#F54E42' } : {color: textColor}]}>
                             {likes}
                         </Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.actionButton} onPress={onComment}>
+                    <TouchableOpacity style={styles.actionButton} onPress={handleCommentPress}>
                         <Ionicons name="chatbubble-outline" size={20} color={textColor} />
                         <Text style={styles.actionText}>{comments}</Text>
                     </TouchableOpacity>

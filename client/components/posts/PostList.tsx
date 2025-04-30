@@ -28,7 +28,7 @@ const PostList = ({
 
     // handle comment press - open post (TODO)
     const handleCommentPress = (postId: string) => {
-        // not done yet
+        handlePostPress(postId);
     };
 
     if (postIds.length === 0) {

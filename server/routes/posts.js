@@ -21,7 +21,7 @@ const formatPost = (post, userId=null) => ({
         name: post.group.name
     } : null,
     likes: post.likes?.length || 0,
-    comments: post.comments?.length || 0,
+    comments: post.commentCount || 0,
     userHasLiked: userId ? post.likes.includes(userId) : false
 });
 

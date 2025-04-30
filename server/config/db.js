@@ -15,5 +15,6 @@ mongoose
 require("../models/User");
 require("../models/Group");
 require("../models/Post");
+require("../models/Comment");
 
 module.exports = mongoose;
