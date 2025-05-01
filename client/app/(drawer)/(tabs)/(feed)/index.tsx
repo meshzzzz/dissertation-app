@@ -30,7 +30,7 @@ export default function Feed() {
             <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
                 <PostList 
                     postIds={feedPosts}
-                    showInFeed={true}
+                    showGroup={true}
                     emptyMessage="No posts yet. Join some groups to see posts!"
                 />
             </ScrollView>

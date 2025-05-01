@@ -34,7 +34,7 @@ const AddPostModal = ({ visible, onClose, onPostCreated, groupId }: AddPostModal
     const { authState } = useAuth();
     const colorScheme = useColorScheme();
     const accentColor = Colors[colorScheme ?? 'light'].secondary;
-    const { fetchFeedPosts, fetchGroupPosts } = usePosts();
+    const { fetchFeedPosts, fetchGroupPosts, fetchMyPosts } = usePosts();
 
     const handleSubmit = async () => {
         // validate input
@@ -66,6 +66,7 @@ const AddPostModal = ({ visible, onClose, onPostCreated, groupId }: AddPostModal
                 // refresh posts in context
                 fetchGroupPosts(groupId);
                 fetchFeedPosts();
+                fetchMyPosts();
                 
                 // reset form and close modal
                 setTitle('');

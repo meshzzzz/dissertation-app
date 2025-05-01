@@ -12,10 +12,10 @@ import { useComments } from '@/context/CommentContext';
 
 interface PostScreenProps {
     postId: string;
-    showInFeed?: boolean;
+    showGroup?: boolean;
 }
 
-const PostScreen = ({ postId, showInFeed=false }: PostScreenProps) => {
+const PostScreen = ({ postId, showGroup=false }: PostScreenProps) => {
     const colorScheme = useColorScheme();
     const { postsById, loading, errors, fetchPost } = usePosts();
     const { 
@@ -126,7 +126,7 @@ const PostScreen = ({ postId, showInFeed=false }: PostScreenProps) => {
                 {/* post */}
                 <PostCard
                     id={postId}
-                    showInFeed={showInFeed}
+                    showGroup={showGroup}
                     isInPostPage={true}
                     onComment={handleCommentPress}
                     onDeleted={handlePostDeleted}

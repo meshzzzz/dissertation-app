@@ -6,20 +6,20 @@ import { useRouter } from 'expo-router';
 
 interface PostListProps {
     postIds: string[];
-    showInFeed?: boolean;
+    showGroup?: boolean;
     emptyMessage?: string; 
 }
 
 const PostList = ({
     postIds,
-    showInFeed = false,
+    showGroup = false,
     emptyMessage = "No posts yet. Be the first to share something!",
 }: PostListProps) => {
     const router = useRouter();
 
     // handle post press
     const handlePostPress = (postId: string) => {
-        if (showInFeed) {
+        if (showGroup) {
             router.push(`/posts/${postId}`);
         } else {
             router.push(`/groups/posts/${postId}`);
@@ -45,7 +45,7 @@ const PostList = ({
                 <PostCard
                     key={id}
                     id={id}
-                    showInFeed={showInFeed}
+                    showGroup={showGroup}
                     onPress={() => handlePostPress(id)}
                     onComment={() => handleCommentPress(id)}
                 />

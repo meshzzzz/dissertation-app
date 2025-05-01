@@ -5,6 +5,7 @@ import { useTheme } from '@react-navigation/native';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
 import { usePosts } from '@/context/PostContext';
+import { router } from 'expo-router';
 
 const PostsContainer = () => {
     const { 
@@ -24,6 +25,11 @@ const PostsContainer = () => {
     }, []);
 
     const postObjects = myPosts.map(id => postsById[id]);
+
+    // handle post press
+    const handlePostPress = (postId: string) => {
+        router.push(`/profile/posts/${postId}`);
+    };
 
     // format date
     const formatDate = (dateString: string) => {
@@ -76,6 +82,7 @@ const PostsContainer = () => {
                         {postObjects.map((post) => (
                             <TouchableOpacity 
                                 key={post.id} 
+                                onPress={() => handlePostPress(post.id)}
                                 style={[
                                 styles.postCard,
                                 { backgroundColor: colors.background }

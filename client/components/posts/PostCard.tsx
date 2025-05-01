@@ -11,7 +11,7 @@ import { usePermissions } from '@/hooks/usePermissions';
 
 interface PostProps {
     id: string;
-    showInFeed?: boolean;
+    showGroup?: boolean;
     onPress?: () => void;
     onComment?: () => void;
     isInPostPage?: boolean;
@@ -20,7 +20,7 @@ interface PostProps {
 
 const PostCard = ({
     id,
-    showInFeed = false,
+    showGroup = false,
     onPress,
     onComment,
     isInPostPage = false,
@@ -102,7 +102,7 @@ const PostCard = ({
                 {/* group tag and delete button container */}
                 <View style={styles.headerRight}>
                     {/* group tag - only shown in feed context */}
-                    {showInFeed && group && (
+                    {showGroup && group && (
                         <View style={[styles.groupTag, { backgroundColor: secondaryColor }]}>
                             <Text style={styles.groupTagText}>{group.name}</Text>
                         </View>
