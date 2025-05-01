@@ -60,6 +60,22 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
 
+    // add "Not Set" option to each dropdown list
+    const [countryItems, setCountryItems] = useState([
+        { label: "None", value: "" },
+        ...COUNTRIES
+    ]);
+    
+    const [campusItems, setCampusItems] = useState([
+        { label: "None", value: "" },
+        ...QMUL_CAMPUSES
+    ]);
+    
+    const [accomodationItems, setAccomodationItems] = useState([
+        { label: "None", value: "" },
+        ...QMUL_ACCOMMODATIONS
+    ]);
+
     useEffect(() => {
         if (modalVisible && userData) {
             setName(userData.name || '');
@@ -192,7 +208,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
                                     <DropDownPicker
                                         open={countryOpen}
                                         value={country}
-                                        items={COUNTRIES}
+                                        items={countryItems}
                                         setOpen={setCountryOpen}
                                         setValue={setCountry}
                                         placeholder="Select your nationality"
@@ -219,7 +235,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
                                     <DropDownPicker
                                         open={campusOpen}
                                         value={campus}
-                                        items={QMUL_CAMPUSES}
+                                        items={campusItems}
                                         setOpen={setCampusOpen}
                                         setValue={setCampus}
                                         placeholder="Select your campus"
@@ -243,7 +259,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
                                     <DropDownPicker
                                         open={accomodationOpen}
                                         value={accomodation}
-                                        items={QMUL_ACCOMMODATIONS}
+                                        items={accomodationItems}
                                         setOpen={setAccomodationOpen}
                                         setValue={setAccomodation}
                                         placeholder="Select your accommodation"

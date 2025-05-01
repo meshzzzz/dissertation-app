@@ -1,28 +1,24 @@
-import { SafeAreaView, TouchableOpacity, Image, View as DefaultView, ScrollView, StyleSheet } from 'react-native';
-import { Text, View } from '@/components/Themed';
+import React, { useEffect, useState } from 'react';
+import { SafeAreaView, StyleSheet } from 'react-native';
+import { View } from '@/components/Themed';
 import { useTheme } from '@react-navigation/native';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
-import React, { useEffect, useState } from 'react';
 import { API_URL, useAuth } from '@/context/AuthContext';
 import axios from 'axios';
-import { FontAwesome, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import ImagePickerModal from '@/components/images/ImagePickerModal';
 import EditProfileModal from '@/components/profile/EditProfileModal';
 import Popup from '@/components/Popup';
-import { COUNTRIES } from '@/constants/CountryData';
+import ProfileHeader from '@/components/profile/ProfileHeader';
+import Pinboard from '@/components/profile/Pinboard';
 import PostsContainer from '@/components/profile/PostsContainer';
 
 export default function Profile() {
     const { authState } = useAuth();
     const { colors } = useTheme();
     const colorScheme = useColorScheme();
-    const accentColor = Colors[colorScheme ?? 'light'].secondary;
-    const tintColor = Colors[colorScheme ?? 'light'].primary;
     const middleBgColor = Colors[colorScheme ?? 'light'].profile.middleBackground;
-    const bottomBgColor = Colors[colorScheme ?? 'light'].profile.bottomBackground;
-    const pinboardColor = Colors[colorScheme ?? 'light'].profile.pinboard;
     const [pfpModalVisible, setPfpModalVisible] = useState(false);
     const [editModalVisible, setEditModalVisible] = useState(false);
     const [uploadLoading, setUploadLoading] = useState(false);
@@ -83,15 +79,15 @@ export default function Profile() {
                 }
 
                 setUserData({
-                    name: response.data?.data?.preferredName || 'Robert Pattinson',
+                    name: response.data?.data?.preferredName || 'Anon',
                     program: response.data?.data?.courseOfStudy 
                         ? `${yearOfStudy}${response.data.data.courseOfStudy}`
-                        : '2nd Year Biology BSc',
-                    aboutMe: response.data?.data?.aboutMe || "Hi I'm Rob, looking for friends who like Biology, baking & walking.",
+                        : 'Not Set',
+                    aboutMe: response.data?.data?.aboutMe || "Nice to meet you!",
                     widgets: {
-                        country: response.data?.data?.country || 'UK',
-                        campus: response.data?.data?.campus || 'Mile End',
-                        accomodation: response.data?.data?.accomodation || 'Maurice Court'
+                        country: response.data?.data?.country || 'Not Set',
+                        campus: response.data?.data?.campus || 'Not Set',
+                        accomodation: response.data?.data?.accomodation || 'Not Set'
                     },
                 });
             } catch (error) {
@@ -308,135 +304,36 @@ export default function Profile() {
         }
     };
     
-    const getCountryEmoji = (countryName: string) => {
-        const country = COUNTRIES.find(c => c.value === countryName);
-        return country?.emoji || '🌎'; // default world emoji
-    };
-
     const closeNotification = () => {
         setNotification({...notification, visible: false});
     };
 
     return (
-        <SafeAreaView style={[styles.container,{ backgroundColor: colors.background }]}>
+        <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
             <View style={styles.contentContainer}>
-                {/* background sections - scroll with content */}
-                {/* middle light blue section (from middle of profile pic to posts section) */}
-                <DefaultView 
+                {/* middle background colour */}
+                <View 
                     style={[
                         styles.middleBackground, 
                         { backgroundColor: middleBgColor, zIndex: -2 }]} 
                 />
-                
-                {/* bottom darker blue section (posts section) */}
-                <DefaultView 
-                    style={[
-                        styles.bottomBackground, 
-                        { backgroundColor: bottomBgColor, zIndex: -2 }]} 
+
+                {/* header with image and basic info */}
+                <ProfileHeader 
+                    name={userData.name}
+                    program={userData.program}
+                    profileImage={profileImage}
+                    onEditPress={() => setEditModalVisible(true)}
                 />
 
-                <TouchableOpacity 
-                    style={styles.editButton}
-                    onPress={() => setEditModalVisible(true)}>
-                    <Ionicons name="pencil" size={24} color={'#578BBB'} />
-                </TouchableOpacity>
+                {/* pinboard about me */}
+                <Pinboard 
+                    aboutMe={userData.aboutMe}
+                    widgets={userData.widgets}
+                />
 
-                {/* profile picture */}
-                <View style={styles.profilePictureContainer}>
-                    <View style={[
-                        styles.profilePictureFrame,
-                        { 
-                            borderWidth: 6, 
-                            borderColor: accentColor,
-                            backgroundColor: colors.background ,
-                            shadowColor: '#000',
-                            shadowOffset: { width: 0, height: 2 },
-                            shadowOpacity: 0.2,
-                            shadowRadius: 3,
-                            elevation: 3 
-                        }
-                    ]}>
-                        <Image
-                            source={profileImage}
-                            style={styles.profilePicture}
-                        />
-                    </View>
-                </View>
-
-                {/* user info */}
-                <Text style={styles.userName}>{userData.name}</Text>
-                <Text style={styles.userProgram}>{userData.program}</Text>
-
-                {/* about me pin-board */}
-                <View style={[
-                    styles.pinboard,
-                    { backgroundColor: pinboardColor}
-                    ]}>
-                    
-                        {/* pinboard corner dots */}
-                    <View style={[
-                        styles.cornerDot,
-                        styles.topLeftDot,
-                    ]} />
-                    
-                    <View style={[
-                        styles.cornerDot,
-                        styles.topRightDot,
-                    ]} />
-                    
-                    <View style={[
-                        styles.cornerDot,
-                        styles.bottomLeftDot,
-                    ]} />
-                    
-                    <View style={[
-                        styles.cornerDot,
-                        styles.bottomRightDot,
-                    ]} />
-                    
-                    <View style={styles.pinboardContent}>
-                        <Text style={[
-                            styles.pinboardTitle,
-                            { color: colorScheme === 'dark' ? '#FFF' : '#000' }]}>
-                            About me
-                        </Text>
-                        <Text style={[
-                            styles.pinboardText,
-                            { color: colorScheme === 'dark' ? '#EEE' : '#000' }]}
-                            numberOfLines={2}
-                            ellipsizeMode='tail'
-                        >
-                            {userData.aboutMe}
-                        </Text>
-
-                        {/* location info */}
-                        <View style={styles.locationContainer}>
-                            {userData.widgets.country && (
-                                <View style={styles.locationItem}>
-                                <Text style={styles.countryEmoji}>{getCountryEmoji(userData.widgets.country)}</Text>
-                                <Text style={styles.locationText}>{userData.widgets.country}</Text>
-                                </View>
-                            )}
-                            
-                            {userData.widgets.campus && (
-                                <View style={styles.locationItem}>
-                                <FontAwesome name="university" size={12} color="#16529C" />
-                                <Text style={styles.locationText}>{userData.widgets.campus}</Text>
-                                </View>
-                            )}
-                            
-                            {userData.widgets.accomodation && (
-                                <View style={styles.locationItem}>
-                                <MaterialIcons name="apartment" size={15} color="#16529C" />
-                                <Text style={styles.locationText}>{userData.widgets.accomodation}</Text>
-                                </View>
-                            )}
-                        </View>
-                    </View>
-                </View>
-
-                {/* posts section */}
-                <PostsContainer token={authState?.token || null} />
+                {/* posts scroller */}
+                <PostsContainer />
             </View>
 
             <ImagePickerModal 
@@ -465,7 +362,7 @@ export default function Profile() {
                 }}
             />
 
-            {/* Notification Popup */}
+            {/* notification popup */}
             <Popup
                 visible={notification.visible}
                 type={notification.type}
@@ -482,11 +379,6 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
     },
-    contentContainer: {
-        alignItems: 'center',
-        paddingBottom: 40,
-        position: 'relative',
-    },
     middleBackground: {
         position: 'absolute',
         top: 110,
@@ -494,119 +386,10 @@ const styles = StyleSheet.create({
         right: 0,
         height: 370,
     },
-    bottomBackground: {
-        position: 'absolute',
-        top: 480,
-        left: 0,
-        right: 0,
-        bottom: 20,
-    },
-    editButton: {
-        position: 'absolute',
-        top: 120,
-        right: 10,
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        justifyContent: 'center',
+    contentContainer: {
         alignItems: 'center',
-        zIndex: 10,
-    },
-    profilePictureContainer: {
-        marginTop: 15,
-        marginBottom: 16,
-    },
-    profilePictureFrame: {
-        width: 190,
-        height: 190,
-        borderRadius: 100,
-        borderWidth: 2,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    profilePicture: {
-        width: 178,
-        height: 178,
-        borderRadius: 100,
-    },
-    userName: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        marginBottom: 4,
-    },
-    userProgram: {
-        fontSize: 15,
-        marginBottom: 20,
-    },
-    pinboard: {
         position: 'relative',
-        borderRadius: 15,
-        padding: 18,
-        marginBottom: 18,
-        width: '90%',
-        minHeight: 150,
-        alignSelf: 'center',
-    },
-    cornerDot: {
-        position: 'absolute',
-        height: 12,
-        width: 12,
-        borderRadius: 6,
-        backgroundColor: '#C19259'
-    },
-    topLeftDot: {
-        top: 15,
-        left: 15,
-    },
-    topRightDot: {
-        top: 15,
-        right: 15,
-    },
-    bottomLeftDot: {
-        bottom: 15,
-        left: 15,
-    },
-    bottomRightDot: {
-        bottom: 15,
-        right: 15,
-    },
-    pinboardContent: {
-        marginHorizontal: 20,
-        marginVertical: 10,
-    },
-    pinboardTitle: {
-        fontSize: 12,
-        fontWeight: 'bold',
-        marginBottom: 6,
-        marginTop: 4,
-    },
-    pinboardText: {
-        fontSize: 12,
-        marginBottom: 10,
-        lineHeight: 22,
-        height: 44,
-        overflow: 'hidden',
-    },
-    countryEmoji: {
-        fontSize: 14,
-    },
-    locationContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-    },
-    locationItem: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 10,
-        flex: 1,
-    },
-    locationText: {
-        marginLeft: 8,
-        fontSize: 10,
-        flexShrink: 1,
-        flexWrap: 'wrap',
-        maxWidth: '70%',
-    },
+    }
 })
 
 

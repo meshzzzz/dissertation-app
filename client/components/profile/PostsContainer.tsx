@@ -17,32 +17,13 @@ const PostsContainer = () => {
     const { colors } = useTheme();
     const colorScheme = useColorScheme();
     const accentColor = Colors[colorScheme ?? 'light'].secondary;
+    const bottomBgColor = Colors[colorScheme ?? 'light'].profile.bottomBackground;
 
     useEffect(() => {
         fetchMyPosts();
     }, []);
 
     const postObjects = myPosts.map(id => postsById[id]);
-
-    if (loading.myPosts) {
-        return (
-            <View style={styles.postsSection}>
-                <Text style={styles.postsSectionTitle}>My posts</Text>
-                <View style={styles.loadingContainer}>
-                    <ActivityIndicator size="small" color={accentColor} />
-                </View>
-            </View>
-        );
-    }
-
-    if (errors.myPosts) {
-        return (
-            <View style={styles.postsSection}>
-                <Text style={styles.postsSectionTitle}>My posts</Text>
-                <Text style={styles.errorText}>{errors.myPosts}</Text>
-            </View>
-        );
-    }
 
     // format date
     const formatDate = (dateString: string) => {
@@ -70,49 +51,64 @@ const PostsContainer = () => {
     };
 
     return (
-        <View style={styles.postsSection}>
-            <Text style={styles.postsSectionTitle}>My posts</Text>
-            
-            {postObjects.length === 0 ? (
-                <Text style={styles.noPostsText}>No posts yet</Text>
-            ) : (
-                <ScrollView 
-                    horizontal={true}
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={{ paddingRight: 20 }}
-                    style={styles.postsScrollView}
-                >
-                    {postObjects.map((post) => (
-                        <TouchableOpacity 
-                            key={post.id} 
-                            style={[
-                            styles.postCard,
-                            { backgroundColor: colors.background }
-                            ]}
-                        >
-                            <View style={{ backgroundColor: 'transparent' }}>
-                                <Text style={styles.postTitle}>{post.title || post.content.substring(0, 20) + '...'}</Text>
-                                <Text style={styles.postDate}>
-                                    {formatDate(post.createdAt)} • {formatTime(post.createdAt)}
-                                </Text>
-                            </View>
-                            <View style={[
-                                styles.postTag,
-                                { backgroundColor: accentColor }
-                            ]}>
-                                <Text style={styles.postTagText}>
-                                    {post.group?.name || 'Personal'}
-                                </Text>
-                            </View>
-                        </TouchableOpacity>
-                    ))}
-                </ScrollView>
-            )}
+        <View style={[
+            styles.container,
+            { backgroundColor: bottomBgColor }
+        ]}>
+            <View style={styles.postsSection}>
+                <Text style={styles.postsSectionTitle}>My posts</Text>
+                
+                {loading.myPosts ? (
+                    <View style={styles.loadingContainer}>
+                        <ActivityIndicator size="small" color={accentColor} />
+                    </View>
+                ) : errors.myPosts ? (
+                    <Text style={styles.errorText}>{errors.myPosts}</Text>
+                ) : postObjects.length === 0 ? (
+                    <Text style={styles.noPostsText}>No posts yet</Text>
+                ) : (
+                    <ScrollView 
+                        horizontal={true}
+                        showsHorizontalScrollIndicator={false}
+                        contentContainerStyle={{ paddingRight: 20 }}
+                        style={styles.postsScrollView}
+                    >
+                        {postObjects.map((post) => (
+                            <TouchableOpacity 
+                                key={post.id} 
+                                style={[
+                                styles.postCard,
+                                { backgroundColor: colors.background }
+                                ]}
+                            >
+                                <View style={{ backgroundColor: 'transparent' }}>
+                                    <Text style={styles.postTitle}>{post.title || post.content.substring(0, 20) + '...'}</Text>
+                                    <Text style={styles.postDate}>
+                                        {formatDate(post.createdAt)} • {formatTime(post.createdAt)}
+                                    </Text>
+                                </View>
+                                <View style={[
+                                    styles.postTag,
+                                    { backgroundColor: accentColor }
+                                ]}>
+                                    <Text style={styles.postTagText}>
+                                        {post.group?.name || 'Personal'}
+                                    </Text>
+                                </View>
+                            </TouchableOpacity>
+                        ))}
+                    </ScrollView>
+                )}
+            </View>
         </View>
     );
 };
 
 const styles = StyleSheet.create({
+    container: {
+        width: '100%',
+        minHeight: 200,
+    },
     postsSection: {
         width: '100%',
         paddingLeft: 20,
