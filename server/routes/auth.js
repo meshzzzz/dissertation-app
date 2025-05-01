@@ -95,12 +95,21 @@ router.post("/login", async(req, res) => {
     
     if (await bcrypt.compare(password, existingUser.password)) {
         const token = jwt.sign({email: existingUser.email}, process.env.JWT_SECRET);
+        const userData = {
+            id: existingUser._id.toString(),
+            email: existingUser.email,
+            firstName: existingUser.firstName,
+            lastName: existingUser.lastName,
+            preferredName: existingUser.preferredName,
+            profileImage: existingUser.profileImage,
+            role: existingUser.role || 'user'
+        };
 
         if (res.status(201)) {
             return res.send({
                 status:"ok", 
                 token: token,
-                role: existingUser.role || "user"
+                user: userData
             })
         }
         else {

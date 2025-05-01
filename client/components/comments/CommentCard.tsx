@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Alert } from 'react-native';
 import { CommentTreeNode } from '@/types/Comment';
 import { useComments } from '@/context/CommentContext';
 import Colors from '@/constants/Colors';
@@ -30,6 +30,8 @@ const CommentCard = ({
     // local state
     const [isLikeLoading, setIsLikeLoading] = useState(false);
     const [showReplies, setShowReplies] = useState(false);
+    const { deleteComment } = useComments();
+    const [isDeleting, setIsDeleting] = useState(false);
 
     const handleLike = async () => {
         if (isLikeLoading) return;
@@ -50,6 +52,32 @@ const CommentCard = ({
   
     const handleToggleReplies = () => {
         setShowReplies(prev => !prev);
+    };
+
+    // handle delete comment
+    const handleDeleteComment = () => {
+        Alert.alert(
+            "Delete Comment",
+            "Are you sure you want to delete this comment? This action cannot be undone.",
+            [
+                {
+                    text: "Cancel",
+                    style: "cancel"
+                },
+                {
+                    text: "Delete",
+                    style: "destructive",
+                    onPress: async () => {
+                        setIsDeleting(true);
+                        try {
+                            await deleteComment(id, postId);
+                        } finally {
+                            setIsDeleting(false);
+                        }
+                    }
+                }
+            ]
+        );
     };
 
     // renderer for reply items (to be passed to RepliesSection)
@@ -76,7 +104,9 @@ const CommentCard = ({
                         textColor={textColor}
                         onLike={handleLike}
                         onReply={handleReplyPress}
+                        onDelete={handleDeleteComment}
                         isLikeLoading={isLikeLoading}
+                        isDeleting={isDeleting}
                     />
                     
                     {/* nested replies section */}
@@ -106,7 +136,9 @@ const CommentCard = ({
                     textColor={textColor}
                     onLike={handleLike}
                     onReply={handleReplyPress}
+                    onDelete={handleDeleteComment}
                     isLikeLoading={isLikeLoading}
+                    isDeleting={isDeleting}
                 />
                 
                 {/* replies section */}

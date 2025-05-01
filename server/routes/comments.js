@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
-const authenticate = require('../middleware/authentication');
+const { authenticate, authoriseDelete } = require('../middleware/auth');
 const Post = mongoose.model('Post');
 const Comment = mongoose.model('Comment');
 
@@ -113,6 +113,45 @@ router.post("/comments/:commentId/like", authenticate, async (req, res) => {
     } catch (err) {
       console.error("Toggle like error:", err);
       return res.send({ status: "error", data: "Failed to toggle like" });
+    }
+});
+
+// delete a comment
+router.delete("/comments/:commentId", authenticate, authoriseDelete('comment'), async (req, res) => {
+    const comment = req.comment;
+    const commentId = comment._id;
+    const postId = comment.post;
+    const isParentComment = comment.parent === null;
+    
+    try {
+        // if parent comment, delete all replies
+        if (isParentComment) {
+            await Comment.deleteMany({ parent: commentId });
+        } else if (comment.parent) {
+            // if reply, decrease parent's reply count
+            await Comment.findByIdAndUpdate(comment.parent, {
+                $inc: { replyCount: -1 }
+            });
+        }
+        
+        // delete comment
+        await Comment.findByIdAndDelete(commentId);
+        
+        // decrement post's comment count
+        await Post.findByIdAndUpdate(postId, {
+            $inc: { commentCount: isParentComment ? -(1 + comment.replyCount) : -1 }
+        });
+        
+        return res.send({ 
+            status: "ok", 
+            data: { 
+                message: "Comment deleted successfully",
+                postId: postId.toString()
+            } 
+        });
+    } catch (error) {
+        console.error("Error deleting comment:", error);
+        return res.send({ status: "error", data: "Error deleting comment" });
     }
 });
 

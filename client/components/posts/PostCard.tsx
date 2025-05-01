@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Image, Alert } from 'react-native';
 import { Text } from '@/components/Themed';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
@@ -7,6 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { formatDistanceToNow } from 'date-fns';
 import { DEFAULT_PFP } from '@/constants/DefaultImages';
 import { usePosts } from '@/context/PostContext';
+import { usePermissions } from '@/hooks/usePermissions';
 
 interface PostProps {
     id: string;
@@ -14,6 +15,7 @@ interface PostProps {
     onPress?: () => void;
     onComment?: () => void;
     isInPostPage?: boolean;
+    onDeleted?: () => void;
 }
 
 const PostCard = ({
@@ -21,13 +23,16 @@ const PostCard = ({
     showInFeed = false,
     onPress,
     onComment,
-    isInPostPage = false
+    isInPostPage = false,
+    onDeleted
 }: PostProps) => {
-    const { postsById, toggleLike } = usePosts();
+    const { canDeleteContent } = usePermissions();
+    const { postsById, toggleLike, deletePost } = usePosts();
     const colorScheme = useColorScheme();
     const textColor = Colors[colorScheme ?? 'light'].text;
     const secondaryColor = Colors[colorScheme ?? 'light'].secondary;
     const [isLikeLoading, setIsLikeLoading] = useState(false);
+    const [isDeleteLoading, setIsDeleteLoading] = useState(false);
     
     // get post data from context
     const post = postsById[id];
@@ -52,6 +57,37 @@ const PostCard = ({
         }
     };
 
+     // handle delete post
+     const handleDeletePost = () => {
+        if (isDeleteLoading) return;
+
+        Alert.alert(
+            "Delete Post",
+            "Are you sure you want to delete this post? This action cannot be undone.",
+            [
+                {
+                    text: "Cancel",
+                    style: "cancel"
+                },
+                {
+                    text: "Delete",
+                    style: "destructive",
+                    onPress: async () => {
+                        setIsDeleteLoading(true);
+                        try {
+                            const success = await deletePost(id);
+                            if (success && onDeleted) {
+                                onDeleted();
+                            }
+                        } finally {
+                            setIsDeleteLoading(false);
+                        }
+                    }
+                }
+            ]
+        );
+    };
+
     const cardContent = (
         <>
             {/* title and time */}
@@ -63,12 +99,26 @@ const PostCard = ({
                     </Text>
                 </View>
                 
-                {/* group tag - only shown in feed context */}
-                {showInFeed && group && (
-                    <View style={[styles.groupTag, { backgroundColor: secondaryColor }]}>
-                    <Text style={styles.groupTagText}>{group.name}</Text>
-                    </View>
-                )}
+                {/* group tag and delete button container */}
+                <View style={styles.headerRight}>
+                    {/* group tag - only shown in feed context */}
+                    {showInFeed && group && (
+                        <View style={[styles.groupTag, { backgroundColor: secondaryColor }]}>
+                            <Text style={styles.groupTagText}>{group.name}</Text>
+                        </View>
+                    )}
+                    
+                    {/* delete button - shown for author or superuser */}
+                    {canDeleteContent(author.id) && (
+                        <TouchableOpacity
+                            style={styles.deleteButton}
+                            onPress={handleDeletePost}
+                            disabled={isDeleteLoading}
+                        >
+                            <Ionicons name="trash-outline" size={16} color="#F54E42" />
+                        </TouchableOpacity>
+                    )}
+                </View>
             </View>
             
             {/* post content */}
@@ -142,6 +192,10 @@ const styles = StyleSheet.create({
         flex: 1,
         marginRight: 12,
     },
+    headerRight: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
     title: {
         fontSize: 12,
         fontWeight: 'bold',
@@ -199,6 +253,9 @@ const styles = StyleSheet.create({
         marginLeft: 4,
         fontSize: 10,
     },
+    deleteButton: {
+        padding: 4,
+    }
 });
 
 export default PostCard;

@@ -4,6 +4,7 @@ import { Text } from '@/components/Themed';
 import PostCard from '@/components/posts/PostCard';
 import CommentCard from '../comments/CommentCard';
 import CommentInput from '../comments/CommentInput';
+import { useRouter } from 'expo-router';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
 import { usePosts } from '@/context/PostContext';
@@ -27,6 +28,7 @@ const PostScreen = ({ postId, showInFeed=false }: PostScreenProps) => {
     const [isInitialLoading, setIsInitialLoading] = useState(true);
     const [replyingTo, setReplyingTo] = useState<{ id: string, name: string } | null>(null);
     const commentInputRef = useRef<TextInput>(null);
+    const router = useRouter();
 
     useEffect(() => {
         const loadData = async () => {
@@ -91,6 +93,10 @@ const PostScreen = ({ postId, showInFeed=false }: PostScreenProps) => {
         }
     };
 
+    const handlePostDeleted = () => {
+        router.back();
+    };
+
     if (isLoading) {
         return (
             <View style={styles.container}>
@@ -123,6 +129,7 @@ const PostScreen = ({ postId, showInFeed=false }: PostScreenProps) => {
                     showInFeed={showInFeed}
                     isInPostPage={true}
                     onComment={handleCommentPress}
+                    onDeleted={handlePostDeleted}
                 />
                 
                 {/* comments section */}

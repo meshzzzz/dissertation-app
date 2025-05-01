@@ -1,17 +1,20 @@
-import React from 'react';
-import { View, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import React, { useState } from 'react';
+import { View, TouchableOpacity, StyleSheet, Image, Alert } from 'react-native';
 import { Text } from '@/components/Themed';
 import { Ionicons } from '@expo/vector-icons';
 import { formatDistanceToNow } from 'date-fns';
 import { DEFAULT_PFP } from '@/constants/DefaultImages';
 import { CommentTreeNode } from '@/types/Comment';
+import { usePermissions } from '@/hooks/usePermissions';
 
 interface CommentContentProps {
     comment: CommentTreeNode;
     textColor: string;
     onLike: () => void;
     onReply: () => void;
+    onDelete: () => void;
     isLikeLoading: boolean;
+    isDeleting: boolean;
 }
 
 const CommentContent = ({
@@ -19,9 +22,12 @@ const CommentContent = ({
     textColor,
     onLike,
     onReply,
+    onDelete,
     isLikeLoading,
+    isDeleting
 }: CommentContentProps) => {
-    const { content, createdAt, author, likes, userHasLiked } = comment;
+    const { canDeleteContent } = usePermissions();
+    const { id, content, createdAt, author, likes, userHasLiked } = comment;
 
     return (
         <>
@@ -34,9 +40,22 @@ const CommentContent = ({
                     />
                     <Text style={styles.authorName}>{author.name}</Text>
                 </View>
-                <Text style={styles.timeAgo}>
-                    {formatDistanceToNow(new Date(createdAt), { addSuffix: true })}
-                </Text>
+                <View style={styles.headerRight}>
+                    <Text style={styles.timeAgo}>
+                        {formatDistanceToNow(new Date(createdAt), { addSuffix: true })}
+                    </Text>
+                    
+                    {/* Delete button - only visible for author */}
+                    {canDeleteContent(author.id) && (
+                        <TouchableOpacity 
+                            style={styles.deleteButton}
+                            onPress={onDelete}
+                            disabled={isDeleting}
+                        >
+                            <Ionicons name="trash-outline" size={16} color="#F54E42" />
+                        </TouchableOpacity>
+                    )}
+                </View>
             </View>
             
             {/* comment content */}
@@ -88,6 +107,10 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
     },
+    headerRight: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
     authorImage: {
         width: 24,
         height: 24,
@@ -102,6 +125,7 @@ const styles = StyleSheet.create({
         fontSize: 8,
         color: '#888',
         opacity: 0.6,
+        marginRight: 10
     },
     content: {
         fontSize: 10,
@@ -124,6 +148,9 @@ const styles = StyleSheet.create({
     },
     likedText: {
         color: '#F54E42',
+    },
+    deleteButton: {
+        padding: 4,
     },
 });
 

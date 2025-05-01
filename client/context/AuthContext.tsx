@@ -1,12 +1,13 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
+import { User } from '@/types/User';
 
 interface AuthProps {
     authState?: {
         token: string | null; 
         authenticated: boolean | null;
-        role: 'user' | 'superuser' | null;
+        user: User | null;
     };
     onSignup?: (
         email: string, 
@@ -24,6 +25,7 @@ interface AuthProps {
 }
 
 const TOKEN_KEY = 'my-jwt';
+const USER_DATA_KEY = 'user-data';
 export const API_URL = 'http://192.168.1.225:5001';
 const AuthContext = createContext<AuthProps>({});
 
@@ -35,23 +37,31 @@ export const AuthProvider = ({children}: any) => {
     const [authState, setAuthState] = useState<{
         token: string | null;
         authenticated: boolean | null;
-        role: 'user' | 'superuser' | null;
+        user: User | null;
     }>({
         token: null,
         authenticated: null,
-        role: null
+        user: null
     })
 
     useEffect(() => {
         const loadToken = async () => {
             const token = await SecureStore.getItemAsync(TOKEN_KEY);
-            const role = await SecureStore.getItemAsync('user-role');
+            const userData = await SecureStore.getItemAsync(USER_DATA_KEY);
             console.log("stored token: ", token);
             if (token) {
+                let user = null;
+                if (userData) {
+                    try {
+                        user = JSON.parse(userData);
+                    } catch (e) {
+                        console.error("Error parsing user data", e);
+                    }
+                }
                 setAuthState({
                     token: token,
                     authenticated: true,
-                    role: role as 'user' | 'superuser' || 'user'
+                    user: user
                 })
                 axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
             }
@@ -59,7 +69,7 @@ export const AuthProvider = ({children}: any) => {
                 setAuthState({
                     token: null,
                     authenticated: false,
-                    role: null
+                    user: null
                 })
             }
         }
@@ -98,17 +108,20 @@ export const AuthProvider = ({children}: any) => {
     const login = async (email: string, password: string) => {
         try {
             const result = await axios.post(`${API_URL}/login`, {email, password});
+            const userData = result.data.user;
+            if (userData) {
+                await SecureStore.setItemAsync(USER_DATA_KEY, JSON.stringify(userData));
+            }
+
             setAuthState({
                 token: result.data.token,
                 authenticated: true,
-                role: result.data.role
+                user: userData
             })
 
             axios.defaults.headers.common['Authorization'] = `Bearer ${result.data.token}`;
             await SecureStore.setItemAsync(TOKEN_KEY, result.data.token);
-            if (result.data.role) {
-                await SecureStore.setItemAsync('user-role', result.data.role);
-            }
+
             return result
 
         } catch (e) {
@@ -118,12 +131,12 @@ export const AuthProvider = ({children}: any) => {
 
     const logout = async () => {
         await SecureStore.deleteItemAsync(TOKEN_KEY);
-        await SecureStore.deleteItemAsync('user-role');
+        await SecureStore.deleteItemAsync(USER_DATA_KEY);
         axios.defaults.headers.common['Authorization'] = '';
         setAuthState({
             token: null,
             authenticated: false,
-            role: null
+            user: null
         })
     }
 

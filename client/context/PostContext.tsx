@@ -29,6 +29,8 @@ interface PostsContextType {
     fetchMyPosts: (page?: number, limit?: number) => Promise<void>;
     fetchPost: (postId: string) => Promise<Post | null>;
     toggleLike: (postId: string) => Promise<void>;
+    deletePost: (postId: string) => Promise<boolean>;
+    updatePostCommentCount: (postId: string, change: number) => void;
 }
 
 const PostsContext = createContext<PostsContextType | undefined>(undefined);
@@ -68,6 +70,44 @@ export const PostsProvider = ({ children }: { children: ReactNode }) => {
             ...prev,
             ...newPosts
         }));
+    };
+
+    // helper to remove a post from all lists
+    const removePostFromLists = (postId: string) => {
+        // remove from feed posts, my posts, and group posts
+        setFeedPosts(prev => prev.filter(id => id !== postId));
+        setMyPosts(prev => prev.filter(id => id !== postId));
+        setGroupPosts(prev => {
+            const updated = { ...prev };
+            Object.keys(updated).forEach(groupId => {
+                updated[groupId] = updated[groupId].filter(id => id !== postId);
+            });
+            return updated;
+        });
+        
+        // remove from postsById
+        setPostsById(prev => {
+            const updated = { ...prev };
+            delete updated[postId];
+            return updated;
+        });
+    };
+
+    // update a post's comment count locally
+    const updatePostCommentCount = (postId: string, change: number) => {
+        setPostsById(prev => {
+            const post = prev[postId];
+            if (!post) return prev;
+            
+            return {
+                ...prev,
+                [postId]: {
+                    ...post,
+                    // ensure count doesn't go negative
+                    comments: Math.max(0, post.comments + change)
+                }
+            };
+        });
     };
 
     // fetch feed posts
@@ -266,6 +306,29 @@ export const PostsProvider = ({ children }: { children: ReactNode }) => {
         }
     };
 
+     // delete a post
+    const deletePost = async (postId: string): Promise<boolean> => {
+        if (!authState?.token) return false;
+
+        try {
+            const response = await axios.delete(`${API_URL}/posts/${postId}`, {
+                params: { token: authState.token }
+            });
+            
+            if (response.data.status === 'ok') {
+                // remove post from all lists
+                removePostFromLists(postId);
+                return true;
+            } else {
+                console.error('Failed to delete post:', response.data.data);
+                return false;
+            }
+        } catch (err) {
+            console.error(`Error deleting post ${postId}:`, err);
+            return false;
+        }
+    };
+
     // reset state when auth changes
     useEffect(() => {
         setPostsById({});
@@ -286,6 +349,8 @@ export const PostsProvider = ({ children }: { children: ReactNode }) => {
         fetchMyPosts,
         fetchPost,
         toggleLike,
+        deletePost,
+        updatePostCommentCount
     };
   
     return (

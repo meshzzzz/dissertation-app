@@ -1,11 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
-const authenticate = require('../middleware/authentication');
+const { authenticate, requireSuperuser } = require('../middleware/auth');
 const User = mongoose.model('User');
 const Group = mongoose.model('Group');
 const upload = require('../middleware/upload');
-const isSuperuser = require('../middleware/isSuperuser');
 const fs = require('fs');
 const cloudinary = require('../config/cloudinary');
 
@@ -139,7 +138,7 @@ router.post("/groups/leave", authenticate, async (req, res) => {
 // SUPERUSER (me) ONLY ROUTES
 
 // create a new group
-router.post("/groups", authenticate, isSuperuser, async (req, res) => {
+router.post("/groups", authenticate, requireSuperuser, async (req, res) => {
     const { name, description, groupImage } = req.body;
     
     try {
@@ -169,7 +168,7 @@ router.post("/groups", authenticate, isSuperuser, async (req, res) => {
 });
 
 // update group details
-router.put("/groups/:id", authenticate, isSuperuser, async (req, res) => {
+router.put("/groups/:id", authenticate, requireSuperuser, async (req, res) => {
     const { id } = req.params;
     const { name, description, groupImage } = req.body;
     
@@ -201,7 +200,7 @@ router.put("/groups/:id", authenticate, isSuperuser, async (req, res) => {
 });
 
 // add group image (currently used in creation, to also be used in editing)
-router.post("/groups/:id/image", authenticate, isSuperuser, upload.single('image'), async (req, res) => {
+router.post("/groups/:id/image", authenticate, requireSuperuser, upload.single('image'), async (req, res) => {
     try {
         const { id } = req.params;
         
@@ -231,7 +230,7 @@ router.post("/groups/:id/image", authenticate, isSuperuser, upload.single('image
 });
 
 // delete a group
-router.delete("/groups/:id", authenticate, isSuperuser, async (req, res) => {
+router.delete("/groups/:id", authenticate, requireSuperuser, async (req, res) => {
     const { id } = req.params;
     
     try {

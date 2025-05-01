@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
-const authenticate = require('../middleware/authentication');
+const { authenticate, authoriseDelete} = require('../middleware/auth');
 const Group = mongoose.model('Group');
 const Post = mongoose.model('Post');
+const Comment = mongoose.model('Comment');
 
 // format post data for response to client
 const formatPost = (post, userId=null) => ({
@@ -211,6 +212,25 @@ router.post("/posts/:postId/like", authenticate, async (req, res) => {
     } catch (error) {
         console.error("Error toggling like:", error);
         return res.send({ status: "error", data: "Error toggling like" });
+    }
+});
+
+// delete a post
+router.delete("/posts/:postId", authenticate, authoriseDelete('post'), async (req, res) => {
+    const post = req.post;
+    const postId = post._id;
+    
+    try {
+        // delete all comments associated with post
+        await Comment.deleteMany({ post: postId });
+        
+        // delete post
+        await Post.findByIdAndDelete(postId);
+        
+        return res.send({ status: "ok", data: "Post deleted successfully" });
+    } catch (error) {
+        console.error("Error deleting post:", error);
+        return res.send({ status: "error", data: "Error deleting post" });
     }
 });
 

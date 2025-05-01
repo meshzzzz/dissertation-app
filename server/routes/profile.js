@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
-const authenticate = require('../middleware/authentication');
+const { authenticate } = require('../middleware/auth');
 const User = mongoose.model('User');
 const upload = require('../middleware/upload');
 const fs = require('fs');

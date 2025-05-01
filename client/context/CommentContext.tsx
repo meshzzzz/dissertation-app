@@ -2,6 +2,7 @@ import React, { createContext, useState, useContext, ReactNode, useEffect } from
 import axios from 'axios';
 import { Comment, CommentTreeNode } from '@/types/Comment';
 import { API_URL, useAuth } from '@/context/AuthContext';
+import { usePosts } from '@/context/PostContext';
 
 interface CommentContextType {
     commentsByPost: Record<string, CommentTreeNode[]>;
@@ -10,6 +11,7 @@ interface CommentContextType {
     fetchComments: (postId: string) => Promise<void>;
     addComment: (postId: string, content: string, parent?: string | null) => Promise<void>;
     toggleLike: (commentId: string, postId: string) => Promise<void>;
+    deleteComment: (commentId: string, postId: string) => Promise<boolean>;
 }
   
 const CommentContext = createContext<CommentContextType | undefined>(undefined);
@@ -50,10 +52,38 @@ function updateCommentTree(
         return c;
     });
 }
-  
 
+function removeCommentFromTree(
+    tree: CommentTreeNode[], 
+    commentId: string
+): CommentTreeNode[] {
+    return tree
+        .filter(c => c.id !== commentId)
+        .map(c => ({
+            ...c,
+            replies: c.replies.length > 0 
+                ? removeCommentFromTree(c.replies, commentId) 
+                : []
+        }));
+}
+function findCommentInTree(
+    tree: CommentTreeNode[], 
+    commentId: string
+): CommentTreeNode | null {
+    for (const comment of tree) {
+        if (comment.id === commentId) return comment;
+        
+        if (comment.replies.length > 0) {
+            const found = findCommentInTree(comment.replies, commentId);
+            if (found) return found;
+        }
+    }
+    return null;
+}
+  
 export const CommentProvider = ({ children }: { children: ReactNode }) => {
     const { authState } = useAuth();
+    const { postsById, updatePostCommentCount } = usePosts();
 
     // state for comments
     const [commentsByPost, setCommentsByPost] = useState<Record<string, CommentTreeNode[]>>({});
@@ -112,6 +142,8 @@ export const CommentProvider = ({ children }: { children: ReactNode }) => {
                 return { ...prev, [postId]: updatedTree };
               }
             });
+
+            updatePostCommentCount(postId, 1);
           }
         } catch (err) {
           console.error('Error adding comment', err);
@@ -143,6 +175,43 @@ export const CommentProvider = ({ children }: { children: ReactNode }) => {
         }
     };
 
+    // delete a comment
+    const deleteComment = async (commentId: string, postId: string): Promise<boolean> => {
+        if (!authState?.token) return false;
+    
+        try {
+          const res = await axios.delete(`${API_URL}/comments/${commentId}`, {
+            params: { token: authState.token }
+          });
+    
+          if (res.data.status === 'ok') {
+                // check if comment is a parent with replies
+                const comment = findCommentInTree(commentsByPost[postId] || [], commentId);
+                const isParentWithReplies = comment && !comment.parent && comment.replies.length > 0;
+                
+                // calculate total comments to remove (1 + replies if parent)
+                const countToRemove = isParentWithReplies ? 1 + comment.replies.length : 1;
+                
+                // remove the comment from the tree
+                setCommentsByPost(prev => ({
+                    ...prev,
+                    [postId]: removeCommentFromTree(prev[postId] || [], commentId)
+                }));
+                
+                // update the post's comment count
+                updatePostCommentCount(postId, -countToRemove);
+                
+                return true;
+          } else {
+            console.error('Failed to delete comment:', res.data.data);
+            return false;
+          }
+        } catch (err) {
+          console.error('Error deleting comment', err);
+          return false;
+        }
+    };
+
     // clear comment state when auth changes
     useEffect(() => {
         setCommentsByPost({});
@@ -156,7 +225,8 @@ export const CommentProvider = ({ children }: { children: ReactNode }) => {
         commentErrors,
         fetchComments,
         addComment,
-        toggleLike
+        toggleLike,
+        deleteComment
     };
 
     return <CommentContext.Provider value={value}>{children}</CommentContext.Provider>;
