@@ -1,6 +1,7 @@
 import { Stack } from 'expo-router';
-import { DrawerToggleButton } from '@react-navigation/drawer';
+import DrawerToggle from '@/components/DrawerToggle';
 import BackButton from '@/components/BackButton';
+
 
 export default function ProfileLayout() {
     return (
@@ -14,7 +15,7 @@ export default function ProfileLayout() {
                 name="index" 
                 options={{ 
                     title: 'My Profile', 
-                    headerLeft: () => <DrawerToggleButton />
+                    headerLeft: () => <DrawerToggle />
                 }} 
             />
             <Stack.Screen 

@@ -4,7 +4,7 @@ import { Tabs, Redirect } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
 import Colors from '@/constants/Colors';
 import { useColorScheme } from '@/components/useColorScheme';
-import { DrawerToggleButton } from '@react-navigation/drawer';
+import DrawerToggle from '@/components/DrawerToggle';
 
 function TabBarIcon(props: {
     name: React.ComponentProps<typeof Ionicons>['name'];
@@ -15,6 +15,8 @@ function TabBarIcon(props: {
 
 export default function TabLayout() {
     const colorScheme = useColorScheme();
+    const primaryColor = Colors[colorScheme ?? 'light'].primary;
+    
     const { authState } = useAuth();
 
     if (!authState?.authenticated) {
@@ -26,7 +28,7 @@ export default function TabLayout() {
             screenOptions={{
                 tabBarActiveTintColor: Colors[colorScheme ?? 'light'].primary,
                 tabBarShowLabel: false,
-                headerLeft: () => <DrawerToggleButton />,
+                headerLeft: () => <DrawerToggle />,
                 headerShown: true,
                 headerShadowVisible: false,
                 tabBarStyle: {

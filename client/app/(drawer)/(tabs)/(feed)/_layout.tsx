@@ -1,5 +1,5 @@
 import { Stack } from 'expo-router';
-import { DrawerToggleButton } from '@react-navigation/drawer';
+import DrawerToggle from '@/components/DrawerToggle';
 import BackButton from '@/components/BackButton';
 
 export default function FeedLayout() {
@@ -14,7 +14,7 @@ export default function FeedLayout() {
                 name="index" 
                 options={{ 
                     title: 'Feed', 
-                    headerLeft: () => <DrawerToggleButton />
+                    headerLeft: () => <DrawerToggle />
                 }} 
             />
             <Stack.Screen 

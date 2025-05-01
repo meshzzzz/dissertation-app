@@ -9,7 +9,6 @@ import { useColorScheme } from '@/components/useColorScheme';
 import { AuthProvider } from '@/context/AuthContext';
 import { PostsProvider } from "@/context/PostContext";
 import { CommentProvider } from "@/context/CommentContext";
-import { View, ActivityIndicator } from 'react-native';
 import "../global.css";
 import Colors from "@/constants/Colors";
 
