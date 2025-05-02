@@ -16,8 +16,5 @@ app.get("/", (req, res) => {
 const routes = require('./routes');
 app.use(routes);
 
-app.listen(5001, () => {
-    console.log("Node js server started.")
-});
 
 module.exports = app;

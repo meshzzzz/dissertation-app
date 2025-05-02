@@ -11,6 +11,7 @@ import { PostsProvider } from "@/context/PostContext";
 import { CommentProvider } from "@/context/CommentContext";
 import "../global.css";
 import Colors from "@/constants/Colors";
+import { ChatProvider } from "@/context/ChatContext";
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -77,11 +78,13 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={colorScheme === 'dark' ? CustomDarkTheme : CustomLightTheme}>   
         <AuthProvider>
+            <ChatProvider>
             <PostsProvider>
                 <CommentProvider>
                     <Slot />
                 </CommentProvider>
             </PostsProvider>
+            </ChatProvider>
         </AuthProvider>
     </ThemeProvider>
   );

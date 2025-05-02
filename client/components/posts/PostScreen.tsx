@@ -120,7 +120,7 @@ const PostScreen = ({ postId, showGroup=false }: PostScreenProps) => {
         <KeyboardAvoidingView 
             style={styles.container}
             behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-            keyboardVerticalOffset={Platform.OS === 'ios' ? 88 : 0}
+            keyboardVerticalOffset={Platform.OS === 'ios' ? 98 : 0}
         >
             <ScrollView style={styles.scrollContainer}>
                 {/* post */}

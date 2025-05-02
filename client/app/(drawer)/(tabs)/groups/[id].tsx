@@ -7,7 +7,7 @@ import {
   TouchableOpacity 
 } from 'react-native';
 import { Text, View } from '@/components/Themed';
-import { Stack, useLocalSearchParams } from 'expo-router';
+import { Stack, useLocalSearchParams, router } from 'expo-router';
 import { useAuth, API_URL } from '@/context/AuthContext';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
@@ -78,6 +78,16 @@ export default function GroupDetail() {
         setIsAddPostModalVisible(false);
     };
 
+    const handleGroupChatPress = () => {
+        router.push({
+            pathname: '/groups/groupchat',
+            params: {
+                groupId: group?.id,
+                groupName: group?.name
+            }
+        })
+    }
+
     // get group post IDs
     const postIds = groupPosts[groupId] || [];
 
@@ -133,7 +143,7 @@ export default function GroupDetail() {
                     
                     <RoundedButton
                         label="Groupchat"
-                        onPress={() => console.log('Open group chat')}
+                        onPress={() => handleGroupChatPress()}
                         color="#00529C"
                         iconName="chatbubble"
                     />
@@ -157,7 +167,7 @@ export default function GroupDetail() {
                     ) : (
                         <PostList
                             postIds={postIds}
-                            showInFeed={false}
+                            showGroup={false}
                             emptyMessage="No posts yet. Be the first to share something!"
                         />
                     )}

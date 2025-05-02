@@ -31,6 +31,13 @@ export default function GroupsLayout() {
                     headerLeft: () => <BackButton />
                 }}  
             />
+            <Stack.Screen
+                name="groupchat"
+                options={{
+                    title: 'Groupchat',
+                    headerLeft: () => <BackButton />
+                }}
+            />
         </Stack>
     );
 }
