@@ -1,29 +1,34 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { 
   SafeAreaView, 
   StyleSheet, 
   ScrollView, 
   ActivityIndicator, 
-  TouchableOpacity 
+  TouchableOpacity,
 } from 'react-native';
 import { Text, View } from '@/components/Themed';
-import { Stack, useLocalSearchParams, router } from 'expo-router';
+import { Stack, useLocalSearchParams, router, useFocusEffect } from 'expo-router';
 import { useAuth, API_URL } from '@/context/AuthContext';
+import { usePermissions } from '@/hooks/usePermissions';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
 import axios from 'axios';
 import { Ionicons } from '@expo/vector-icons';
 import { Group } from '@/types/Group';
+import GroupPinboard from '@/components/groups/GroupPinboard';
 import RoundedButton from '@/components/RoundedButton';
 import PostList from '@/components/posts/PostList';
 import AddPostModal from '@/components/posts/AddPostModal';
+import EditGroupModal from '@/components/groups/EditGroupModal';
 import { usePosts } from '@/context/PostContext';
 
 export default function GroupDetail() {
     const params = useLocalSearchParams();
     const groupId = params.id as string;
     const { authState } = useAuth();
+    const { isSuperuser } = usePermissions();
     const colorScheme = useColorScheme();
+    const primaryColor = Colors[colorScheme ?? 'light'].primary;
 
     const { 
         groupPosts, 
@@ -36,34 +41,41 @@ export default function GroupDetail() {
     const [group, setGroup] = useState<Group | null>(null);
     const [groupError, setGroupError] = useState<string | null>(null);
     const [isAddPostModalVisible, setIsAddPostModalVisible] = useState(false);
+    const [isEditGroupModalVisible, setIsEditGroupModalVisible] = useState(false);
     
-    useEffect(() => {
-        // load group data
-        const loadGroupData = async () => {
-            if (!authState?.token) return;
+    useFocusEffect(
+        useCallback(() => {
+            loadGroupData();
+        }, [])
+    );
 
-            setLoadingGroup(true);
-            setGroupError(null);
+    // load group data
+    const loadGroupData = async () => {
+        if (!authState?.token) return;
 
-            try {
-                // load group details
-                const groupResponse = await axios.get(`${API_URL}/groups/${groupId}`, {
-                    params: { token: authState.token }
-                });
-                
-                if (groupResponse.data.status === 'ok') {
-                    setGroup(groupResponse.data.data);
-                } else {
-                    setGroupError('Failed to fetch group details');
-                }
-            } catch (err) {
-                console.error('Error fetching group data:', err);
-                setGroupError('Network error while fetching data');
-            } finally {
-                setLoadingGroup(false);
+        setLoadingGroup(true);
+        setGroupError(null);
+
+        try {
+            // load group details
+            const groupResponse = await axios.get(`${API_URL}/groups/${groupId}`, {
+                params: { token: authState.token }
+            });
+            
+            if (groupResponse.data.status === 'ok') {
+                setGroup(groupResponse.data.data);
+            } else {
+                setGroupError('Failed to fetch group details');
             }
-        };
+        } catch (err) {
+            console.error('Error fetching group data:', err);
+            setGroupError('Network error while fetching data');
+        } finally {
+            setLoadingGroup(false);
+        }
+    };
 
+    useEffect(() => {
         loadGroupData();
 
         // load group posts
@@ -78,6 +90,13 @@ export default function GroupDetail() {
         setIsAddPostModalVisible(false);
     };
 
+    const handleViewMembers = () => {
+        router.push({
+            pathname: '/groups/members',
+            params: {groupId: group?.id}
+        });
+    };
+
     const handleGroupChatPress = () => {
         router.push({
             pathname: '/groups/groupchat',
@@ -87,6 +106,20 @@ export default function GroupDetail() {
             }
         })
     }
+
+    const handleEditGroup = () => {
+        setIsEditGroupModalVisible(true);
+    };
+
+    const handleGroupUpdated = (updatedGroup: Group) => {
+        // update local state with the updated group data
+        setGroup(updatedGroup);
+        setIsEditGroupModalVisible(false);
+    };
+
+    const handleGroupDeleted = () => {
+        router.push('/groups');
+    };
 
     // get group post IDs
     const postIds = groupPosts[groupId] || [];
@@ -121,23 +154,51 @@ export default function GroupDetail() {
                 <Stack.Screen 
                     options={{ 
                         title: group.name,
+                        headerRight: () => (
+                            <View style={styles.headerButtons}>
+                                <TouchableOpacity 
+                                    onPress={handleViewMembers}
+                                    style={styles.headerButton}
+                                >
+                                    <Ionicons 
+                                        name="people" 
+                                        size={24} 
+                                        color={primaryColor} 
+                                    />
+                                </TouchableOpacity>
+                                
+                                {isSuperuser() && (
+                                    <TouchableOpacity 
+                                        onPress={handleEditGroup}
+                                        style={styles.headerButton}
+                                    >
+                                        <Ionicons 
+                                            name="pencil" 
+                                            size={24} 
+                                            color={primaryColor} 
+                                        />
+                                    </TouchableOpacity>
+                                )}
+                            </View>
+                        )
                     }} 
                 />
             )}
-            <ScrollView style={styles.scrollView}>
-                {/* group header */}
-                <View style={styles.header}>
-                    <Text style={styles.groupName}>{group.name}</Text>
-                    <Text style={styles.memberCount}>{group.membersCount} members</Text>
-                </View>
-                
-                {/* contax admin / groupchat buttons */}
+            <ScrollView style={styles.scrollView}>          
+                <GroupPinboard 
+                    name={group.name}
+                    memberCount={group.membersCount}
+                    description={group.description}
+                    groupImage={group.groupImage}
+                />
+
+                {/* contact admin / groupchat buttons */}
                 <View style={styles.actionButtons}>
                     <RoundedButton
                         label="Contact Admin"
                         onPress={() => console.log('Contact admin')}
                         color="#C80474"
-                        iconName="person"
+                        iconName="help"
                         marginRight={true}
                     />
                     
@@ -149,15 +210,8 @@ export default function GroupDetail() {
                     />
                 </View>
                 
-                {/* group description */}
-                <View style={styles.sectionContainer}>
-                    <Text style={styles.sectionTitle}>About this group</Text>
-                    <Text style={styles.description}>{group.description}</Text>
-                </View>
-                
                 {/* posts */}
-                <View style={styles.sectionContainer}>
-                    <Text style={styles.sectionTitle}>Posts</Text>
+                <View style={styles.postsContainer}>
                     {isPostsLoading ? (
                         <View style={styles.loadingContainer}>
                             <ActivityIndicator size="small" color={Colors[colorScheme ?? 'light'].primary} />
@@ -189,6 +243,14 @@ export default function GroupDetail() {
                 onPostCreated={handlePostCreated}
                 groupId={groupId}
             />
+
+            <EditGroupModal
+                modalVisible={isEditGroupModalVisible}
+                group={group}
+                onClose={() => setIsEditGroupModalVisible(false)}
+                onSuccess={handleGroupUpdated}
+                onDeleted={handleGroupDeleted}
+            />      
         </SafeAreaView>
     );
 }
@@ -216,37 +278,23 @@ const styles = StyleSheet.create({
     scrollView: {
         flex: 1,
     },
-    header: {
-        padding: 16,
-        alignItems: 'flex-start',
+    headerButtons: {
+        flexDirection: 'row',
+        alignItems: 'center',
     },
-    groupName: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        marginBottom: 4,
-    },
-    memberCount: {
-        fontSize: 14,
-        opacity: 0.7,
+    headerButton: {
+        marginHorizontal: 8,
+        padding: 4,
     },
     actionButtons: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         paddingHorizontal: 16,
-        marginBottom: 16,
+        marginBottom: 4,
     },
-    sectionContainer: {
+    postsContainer: {
         padding: 16,
-        marginBottom: 16,
-    },
-    sectionTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        marginBottom: 8,
-    },
-    description: {
-        fontSize: 14,
-        lineHeight: 20,
+        marginBottom: 45,
     },
     addButton: {
         position: 'absolute',

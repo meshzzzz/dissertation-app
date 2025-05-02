@@ -1,11 +1,11 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { SafeAreaView, StatusBar, ScrollView, StyleSheet, ActivityIndicator } from 'react-native';
 import { Text, View } from '@/components/Themed';
 import { useTheme } from '@react-navigation/native';
 import { useColorScheme } from '@/components/useColorScheme';
 import { API_URL, useAuth } from '@/context/AuthContext';
 import axios from 'axios';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { usePermissions } from '@/hooks/usePermissions';
 import SearchBar from '@/components/SearchBar';
 import TabButtons, { TabOption } from '@/components/TabButtons';
@@ -49,12 +49,17 @@ export default function Groups() {
         message: ''
     });
 
-
     // tab options
     const tabOptions: TabOption[] = [
     { id: 'my', label: 'My Groups' },
     { id: 'all', label: 'All Groups' }
     ];
+
+    useFocusEffect(
+        useCallback(() => {
+          loadData();
+        }, [])
+    );
 
     // load groups data
     const loadData = async () => {

@@ -38,6 +38,13 @@ export default function GroupsLayout() {
                     headerLeft: () => <BackButton />
                 }}
             />
+            <Stack.Screen
+                name="members"
+                options={{
+                    title: 'Members',
+                    headerLeft: () => <BackButton />
+                }}
+            />
         </Stack>
     );
 }

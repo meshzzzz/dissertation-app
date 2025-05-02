@@ -24,11 +24,6 @@ const Pinboard = ({ aboutMe, widgets }: PinboardProps) => {
         return country?.emoji || '🌎'; // default world emoji
     };
 
-    const hasAnyWidgets = 
-        widgets.country && widgets.country !== 'Not Set' ||
-        widgets.campus && widgets.campus !== 'Not Set' ||
-        widgets.accomodation && widgets.accomodation !== 'Not Set';
-
     return (
         <View style={[
             styles.pinboard,

@@ -12,7 +12,7 @@ interface GroupCardProps {
 }
 
 const { width } = Dimensions.get('window');
- // spacing between cards
+// spacing between cards
 const gap = 14;
 // 2 cards + 3 gaps (left, middle, right)
 const cardWidth = Math.floor((width - gap * 3) / 2); 

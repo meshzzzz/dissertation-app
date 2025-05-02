@@ -25,6 +25,8 @@ export default function RootLayout() {
   const [loaded, error] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
     Inter: require('../assets/fonts/Inter-Regular.ttf'),
+    LondrinaShadow: require('../assets/fonts/LondrinaShadow-Regular.ttf'),
+    Itim: require('../assets/fonts/Itim-Regular.otf'),
     ...FontAwesome.font,
   });
 

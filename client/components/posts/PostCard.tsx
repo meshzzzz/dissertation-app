@@ -152,9 +152,9 @@ const PostCard = ({
                 <View style={styles.author}>
                     <Text style={styles.authorName}>{author.name}</Text>
                         <Image 
-                        source={{ uri: author.profileImage || DEFAULT_PFP }} 
-                        style={styles.authorImage}
-                    />
+                            source={{ uri: author.profileImage || DEFAULT_PFP }} 
+                            style={styles.authorImage}
+                        />
                 </View>
             </View>
         </>

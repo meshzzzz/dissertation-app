@@ -199,7 +199,7 @@ router.put("/groups/:id", authenticate, requireSuperuser, async (req, res) => {
     }
 });
 
-// add group image (currently used in creation, to also be used in editing)
+// add group image
 router.post("/groups/:id/image", authenticate, requireSuperuser, upload.single('image'), async (req, res) => {
     try {
         const { id } = req.params;
@@ -226,6 +226,37 @@ router.post("/groups/:id/image", authenticate, requireSuperuser, upload.single('
     } catch (error) {
         console.error('Group image upload error:', error);
         return res.send({ status: 'error', data: 'Upload failed' });
+    }
+});
+
+// remove a member from a group
+router.post("/groups/remove-member", authenticate, requireSuperuser, async (req, res) => {
+    const { groupId, memberId } = req.body;
+    
+    try {
+        const group = await Group.findById(groupId);
+        if (!group) return res.send({ status: "error", data: "Group not found" });
+        
+        const user = await User.findById(memberId);
+        if (!user) return res.send({ status: "error", data: "User not found" });
+        
+        // ensure user is a member of the group
+        if (!group.members.includes(memberId)) {
+            return res.send({ status: "error", data: "User is not a member of this group" });
+        }
+        
+        // remove group from user's groups
+        user.groups = user.groups.filter(id => id.toString() !== groupId.toString());
+        await user.save();
+        
+        // remove user from group's members
+        group.members = group.members.filter(id => id.toString() !== memberId.toString());
+        await group.save();
+        
+        return res.send({ status: "ok", data: "Member removed successfully" });
+    } catch (error) {
+        console.error("Error removing member:", error);
+        return res.send({ status: "error", data: "Error removing member" });
     }
 });
 

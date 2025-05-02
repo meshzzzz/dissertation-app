@@ -1,6 +1,7 @@
 import React from 'react';
 import { StyleSheet, View, Text, Image } from 'react-native';
 import { useColorScheme } from '@/components/useColorScheme';
+import { DEFAULT_PFP } from '@/constants/DefaultImages';
 import Colors from '@/constants/Colors';
 
 interface ChatMessageProps {
@@ -25,18 +26,10 @@ export default function ChatMessage({ message, isOwnMessage }: ChatMessageProps)
         ]}>
             {!isOwnMessage && (
                 <View style={styles.avatarContainer}>
-                    {message.senderId.profileImage ? (
-                        <Image
-                            source={{ uri: message.senderId.profileImage }}
-                            style={styles.avatar}
-                        />
-                    ) : (
-                        <View style={[styles.avatarPlaceholder, { backgroundColor: primaryColor }]}>
-                            <Text style={styles.avatarText}>
-                                {message.senderId.preferredName?.[0] || message.senderId.firstName[0]}
-                            </Text>
-                        </View>
-                    )}
+                    <Image
+                        source={{ uri: message.senderId.profileImage || DEFAULT_PFP }}
+                        style={styles.avatar}
+                    />
                 </View>
             )}
             
@@ -88,18 +81,6 @@ const styles = StyleSheet.create({
         width: 30,
         height: 30,
         borderRadius: 15,
-    },
-    avatarPlaceholder: {
-        width: 30,
-        height: 30,
-        borderRadius: 15,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    avatarText: {
-        color: 'white',
-        fontSize: 14,
-        fontWeight: 'bold',
     },
     bubble: {
         borderRadius: 20,
