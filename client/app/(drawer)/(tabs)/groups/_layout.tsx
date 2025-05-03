@@ -45,6 +45,20 @@ export default function GroupsLayout() {
                     headerLeft: () => <BackButton />
                 }}
             />
+            <Stack.Screen
+                name="eventslist"
+                options={{
+                    title: 'Events',
+                    headerLeft: () => <BackButton />
+                }}
+            />
+            <Stack.Screen
+                name="events/[id]"
+                options={{
+                    title: 'Event',
+                    headerLeft: () => <BackButton />
+                }}
+            />
         </Stack>
     );
 }

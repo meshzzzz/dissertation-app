@@ -1,17 +1,20 @@
 import React from 'react';
-import { View, StyleSheet, Image, ImageBackground } from 'react-native';
+import { View, StyleSheet, Image, ImageBackground, TouchableOpacity } from 'react-native';
 import { Text } from '@/components/Themed';
+import { Ionicons } from '@expo/vector-icons';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
+import { router } from 'expo-router';
 
 interface GroupPinboardProps {
     name: string;
     memberCount: number;
     description: string;
     groupImage: string;
+    onEventsPress: () => void;
 }
 
-const GroupPinboard = ({ name, memberCount, description, groupImage }: GroupPinboardProps) => {
+const GroupPinboard = ({ name, memberCount, description, groupImage, onEventsPress }: GroupPinboardProps) => {
     const colorScheme = useColorScheme();
     const pinboardColor = Colors[colorScheme ?? 'light'].profile.pinboard;
 
@@ -59,6 +62,16 @@ const GroupPinboard = ({ name, memberCount, description, groupImage }: GroupPinb
                         {description}
                     </Text>
                 </ImageBackground>
+                <ImageBackground 
+                    source={require('@/assets/images/notepaper.png')} 
+                    style={styles.eventsNoteContainer}
+                >
+                    <Text style={styles.eventTitle}>Next Event</Text>
+                    <TouchableOpacity style={styles.seeMoreButton} onPress={onEventsPress}>
+                        <Text style={styles.seeMoreText}>See more</Text>
+                        <Ionicons name="chevron-forward-outline" size={12} color={'black'}/>
+                    </TouchableOpacity>
+                </ImageBackground>
             </View>
         </View>
     );
@@ -72,7 +85,7 @@ const styles = StyleSheet.create({
         marginTop: 10,
         marginBottom: 18,
         width: '90%',
-        minHeight: 450,
+        height: 450,
         alignSelf: 'center',
     },
     cornerDot: {
@@ -156,6 +169,31 @@ const styles = StyleSheet.create({
         height: 88,
         marginLeft: 20,
         marginTop: 15
+    },
+    eventsNoteContainer: {
+        width: 140,
+        height: 200,
+        marginLeft: 150,
+        marginTop: -95,
+    },
+    eventTitle: {
+        fontFamily: 'LondrinaShadow',
+        fontSize: 20,
+        textAlign: 'center',
+        marginTop: 30
+    },
+    seeMoreButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        alignSelf: 'flex-end',
+        position: 'absolute',
+        bottom: 30,
+        right: 20,
+    },
+    seeMoreText: {
+        fontFamily: 'Itim',
+        fontSize: 11,
+        color: 'black',
     }
 });
 

@@ -121,6 +121,13 @@ export default function GroupDetail() {
         router.push('/groups');
     };
 
+    const onEventsPress = () => {
+        router.push({
+            pathname: '/groups/eventslist',
+            params: { groupId }
+        });
+    }
+
     // get group post IDs
     const postIds = groupPosts[groupId] || [];
 
@@ -190,6 +197,7 @@ export default function GroupDetail() {
                     memberCount={group.membersCount}
                     description={group.description}
                     groupImage={group.groupImage}
+                    onEventsPress={onEventsPress}
                 />
 
                 {/* contact admin / groupchat buttons */}

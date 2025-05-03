@@ -8,6 +8,7 @@ const groupsRoutes = require('./groups');
 const postsRoutes = require('./posts');
 const commentsRoutes = require('./comments');
 const chatRoutes = require('./chat');
+const eventsRoutes = require('./events');
 
 // register routes
 router.use(authRoutes);
@@ -16,5 +17,6 @@ router.use(groupsRoutes);
 router.use(postsRoutes);
 router.use(commentsRoutes);
 router.use(chatRoutes);
+router.use(eventsRoutes);
 
 module.exports = router;

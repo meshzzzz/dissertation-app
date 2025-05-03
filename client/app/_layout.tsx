@@ -9,6 +9,7 @@ import { useColorScheme } from '@/components/useColorScheme';
 import { AuthProvider } from '@/context/AuthContext';
 import { PostsProvider } from "@/context/PostContext";
 import { CommentProvider } from "@/context/CommentContext";
+import { EventProvider } from "@/context/EventContext";
 import "../global.css";
 import Colors from "@/constants/Colors";
 import { ChatProvider } from "@/context/ChatContext";
@@ -81,11 +82,13 @@ export default function RootLayout() {
     <ThemeProvider value={colorScheme === 'dark' ? CustomDarkTheme : CustomLightTheme}>   
         <AuthProvider>
             <ChatProvider>
-            <PostsProvider>
-                <CommentProvider>
-                    <Slot />
-                </CommentProvider>
-            </PostsProvider>
+                <EventProvider>
+                    <PostsProvider>
+                        <CommentProvider>
+                            <Slot />
+                        </CommentProvider>
+                    </PostsProvider>
+                </EventProvider>
             </ChatProvider>
         </AuthProvider>
     </ThemeProvider>

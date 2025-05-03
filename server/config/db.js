@@ -17,5 +17,6 @@ require("../models/Group");
 require("../models/Post");
 require("../models/Comment");
 require("../models/Message");
+require("../models/Event");
 
 module.exports = mongoose;
