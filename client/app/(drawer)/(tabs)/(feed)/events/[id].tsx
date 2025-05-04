@@ -140,51 +140,51 @@ export default function EventDetailsScreen() {
 
     return (
         <SafeAreaView style={styles.container}>
-            <Stack.Screen
-                options={{
-                    title: 'Event',
-                    headerRight: () =>
-                    isSuperuser() ? (
-                        <TouchableOpacity onPress={handleDeleteEvent} style={styles.deleteButton}>
-                        <Ionicons name="trash-outline" size={24} color="#F54E42" />
-                        </TouchableOpacity>
-                    ) : null,
-                }}
-            />
-    
-            <FlatList
-                data={event.interestedUsers}
-                keyExtractor={(item) => item._id}
-                renderItem={renderUserItem}
-                contentContainerStyle={styles.scrollContent}
-                ListHeaderComponent={
-                    <>
-                        <EventCard event={event} />
-                        <View style={styles.actionContainer}>
-                            <RoundedButton
-                                label={userInterested ? 'Remove Interest' : 'Register Interest'}
-                                onPress={handleInterestToggle}
-                                color={'#00529C'}
-                                iconName={userInterested ? 'star' : 'star-outline'}
-                                disabled={isInterestLoading}
-                                fullWidth
-                            />
-                            {isInterestLoading && (
-                                <View style={styles.loadingOverlay}>
-                                    <ActivityIndicator size="small" color="#00529C" />
-                                </View>
-                            )}
-                        </View>
-                        <View style={styles.interestedHeader}>
-                            <Text style={styles.interestedTitle}>Interested Users</Text>
-                            <View style={styles.countBadge}>
-                                <Text style={styles.countText}>{event.interestedUsers?.length}</Text>
-                            </View>
-                        </View>
-                    </>
-                }
-            />
-        </SafeAreaView>
+        <Stack.Screen
+          options={{
+            title: 'Event',
+            headerRight: () =>
+              isSuperuser() ? (
+                <TouchableOpacity onPress={handleDeleteEvent} style={styles.deleteButton}>
+                  <Ionicons name="trash-outline" size={24} color="#F54E42" />
+                </TouchableOpacity>
+              ) : null,
+          }}
+        />
+  
+        <FlatList
+            data={event.interestedUsers}
+            keyExtractor={(item) => item._id}
+            renderItem={renderUserItem}
+            ListHeaderComponent={
+            <>
+              <EventCard event={event} />
+              <View style={styles.actionContainer}>
+                <RoundedButton
+                  label={userInterested ? 'Remove Interest' : 'Register Interest'}
+                  onPress={handleInterestToggle}
+                  color={'#00529C'}
+                  iconName={userInterested ? 'star' : 'star-outline'}
+                  disabled={isInterestLoading}
+                  fullWidth
+                />
+                {isInterestLoading && (
+                  <View style={styles.loadingOverlay}>
+                    <ActivityIndicator size="small" color="#00529C" />
+                  </View>
+                )}
+              </View>
+              <View style={styles.interestedHeader}>
+                <Text style={styles.interestedTitle}>Interested Users</Text>
+                <View style={styles.countBadge}>
+                  <Text style={styles.countText}>{event.interestedUsers?.length}</Text>
+                </View>
+              </View>
+            </>
+          }
+          contentContainerStyle={styles.scrollContent}
+        />
+      </SafeAreaView>
     );
 }
 

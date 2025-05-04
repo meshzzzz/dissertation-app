@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
 const { authenticate, requireSuperuser } = require('../middleware/auth');
-const User = mongoose.model('User');
 const Group = mongoose.model('Group');
 const Event = mongoose.model('Event');
 const upload = require('../middleware/upload');
@@ -11,7 +10,6 @@ const cloudinary = require('../config/cloudinary');
 
 const DEFAULT_EVENT_PICTURE = 'https://res.cloudinary.com/dtey1y2fw/image/upload/v1745500388/eventimg_default_c_fill_w_300_h_200_xedger.jpg';
 
-// Helper function to format event response
 function formatEventResponse(event) {
     return {
         _id: event._id,
@@ -22,19 +20,19 @@ function formatEventResponse(event) {
         groupId: event.group._id,
         groupName: event.group.name,
         eventImage: event.eventImage || DEFAULT_EVENT_PICTURE,
-        interestedUsers: event.interestedUsers || [],
+        interestedUsers: event.interestedUsers ?? [],
         createdBy: event.createdBy,
         createdAt: event.createdAt
     };
 }
 
 // get all events
-router.get("/events", async (req, res) => {
+router.get("/events", authenticate, async (req, res) => {
     try {
         const events = await Event.find()
             .populate('group', 'name')
-            .populate('createdBy', 'firstName lastName preferredName')
-            .sort({ date: 1 }); // Sort by date ascending (upcoming events first)
+            .populate('createdBy', 'firstName lastName preferredName profileImage email')
+            .sort({ date: 1 });
         
             const formattedEvents = events.map(event => formatEventResponse(event));
         
@@ -46,13 +44,14 @@ router.get("/events", async (req, res) => {
 });
 
 // get events for a specific group
-router.get("/groups/:groupId/events", async (req, res) => {
+router.get("/groups/:groupId/events", authenticate, async (req, res) => {
     try {
         const { groupId } = req.params;
         
         const events = await Event.find({ group: groupId })
             .populate('group', 'name')
-            .populate('createdBy', 'firstName lastName preferredName')
+            .populate('createdBy', 'firstName lastName preferredName profileImage email')
+            .populate('interestedUsers', 'firstName lastName preferredName profileImage email')
             .sort({ date: 1 });
         
             const formattedEvents = events.map(event => formatEventResponse(event));
@@ -65,16 +64,15 @@ router.get("/groups/:groupId/events", async (req, res) => {
 });
 
 // get a specific event's details
-router.get("/events/:id", async (req, res) => {
+router.get("/events/:id", authenticate, async (req, res) => {
     try {
         const event = await Event.findById(req.params.id)
             .populate('group', 'name')
-            .populate('createdBy', 'firstName lastName preferredName')
-            .populate('interestedUsers', 'firstName lastName preferredName profileImage');
+            .populate('createdBy', 'firstName lastName preferredName profileImage email')
+            .populate('interestedUsers', 'firstName lastName preferredName profileImage email');
             
         if (!event) return res.send({ status: "error", data: "Event not found" });
         
-        // Get user interest status if authenticated
         let userInterested = false;
         if (req.user) {
             userInterested = event.interestedUsers.some(
@@ -86,7 +84,6 @@ router.get("/events/:id", async (req, res) => {
             status: "ok", 
             data: {
                 ...formatEventResponse(event),
-                interestedUsers: event.interestedUsers,
                 userInterested
             }
         });
@@ -99,13 +96,11 @@ router.get("/events/:id", async (req, res) => {
 // get all events for the current user
 router.get("/user/events", authenticate, async (req, res) => {
     try {
-        // Get groups the user is in
-        const user = await User.findById(req.user._id);
-        
-        // Get events from those groups
+        const user = req.user;
         const events = await Event.find({ group: { $in: user.groups } })
             .populate('group', 'name')
-            .populate('createdBy', 'firstName lastName preferredName')
+            .populate('createdBy', 'firstName lastName preferredName profileImage email')
+            .populate('interestedUsers', 'firstName lastName preferredName profileImage email')
             .sort({ date: 1 });
         
         const formattedEvents = events.map(event => {
@@ -138,33 +133,27 @@ router.post("/events/:id/interest", authenticate, async (req, res) => {
             userId => userId.toString() === user._id.toString()
         );
         
+        let interested = false;
+
         if (userIndex !== -1) {
-            // If already interested, remove interest
             event.interestedUsers.splice(userIndex, 1);
-            await event.save();
-            return res.send({ 
-                status: "ok", 
-                data: { 
-                    message: "Interest removed", 
-                    interested: false, 
-                    count: event.interestedUsers.length,
-                    userId: user._id 
-                } 
-            });
         } else {
-            // If not interested, add interest
             event.interestedUsers.push(user._id);
-            await event.save();
-            return res.send({ 
-                status: "ok", 
-                data: { 
-                    message: "Interest registered", 
-                    interested: true, 
-                    count: event.interestedUsers.length,
-                    userId: user._id
-                } 
-            });
+            interested = true;
         }
+        await event.save();
+        await event.populate('interestedUsers', 'firstName lastName preferredName profileImage email');
+
+        return res.send({
+            status: "ok",
+            data: {
+                message: interested ? "Interest registered" : "Interest removed",
+                interested,
+                count: event.interestedUsers.length,
+                userId: user._id,
+                interestedUsers: event.interestedUsers,
+            }
+        });
     } catch (error) {
         console.error("Error registering interest:", error);
         return res.send({ status: "error", data: "Error registering interest" });

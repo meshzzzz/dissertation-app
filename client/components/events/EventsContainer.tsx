@@ -16,7 +16,7 @@ const EventsContainer = ({eventIds}: EventsContainerProps) => {
 
     // handle event press
     const handleEventPress = (eventId: string) => {
-        router.push(`/groups/events/${eventId}`);
+        router.push(`/events/${eventId}`);
     };
 
     // format date

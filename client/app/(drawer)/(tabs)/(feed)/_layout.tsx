@@ -24,6 +24,13 @@ export default function FeedLayout() {
                     headerLeft: () => <BackButton />
                 }}  
             />
+            <Stack.Screen
+                name="events/[id]"
+                options={{
+                    title: 'Event',
+                    headerLeft: () => <BackButton />
+                }}
+            />
         </Stack>
     );
 }

@@ -21,6 +21,7 @@ import PostList from '@/components/posts/PostList';
 import AddPostModal from '@/components/posts/AddPostModal';
 import EditGroupModal from '@/components/groups/EditGroupModal';
 import { usePosts } from '@/context/PostContext';
+import { useEvents } from '@/context/EventContext';
 
 export default function GroupDetail() {
     const params = useLocalSearchParams();
@@ -36,6 +37,8 @@ export default function GroupDetail() {
         errors, 
         fetchGroupPosts 
     } = usePosts();
+
+    const { getUpcomingEvent } = useEvents();
 
     const [loadingGroup, setLoadingGroup] = useState(true);
     const [group, setGroup] = useState<Group | null>(null);
@@ -135,6 +138,8 @@ export default function GroupDetail() {
     const isPostsLoading = loading.groups[groupId];
     const postsError = errors.groups[groupId];
 
+    const upcomingEvent = groupId ? getUpcomingEvent(groupId) : null;
+
     if (loadingGroup) {
         return (
             <SafeAreaView style={styles.container}>
@@ -198,6 +203,7 @@ export default function GroupDetail() {
                     description={group.description}
                     groupImage={group.groupImage}
                     onEventsPress={onEventsPress}
+                    upcomingEvent={upcomingEvent}
                 />
 
                 {/* contact admin / groupchat buttons */}

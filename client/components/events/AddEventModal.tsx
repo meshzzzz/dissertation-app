@@ -19,6 +19,7 @@ import { API_URL, useAuth } from '@/context/AuthContext';
 import axios from 'axios';
 import * as ImagePicker from 'expo-image-picker';
 import ImagePickerModal from '../images/ImagePickerModal';
+import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { useEvents } from '@/context/EventContext';
 
 interface AddEventModalProps {
@@ -33,14 +34,16 @@ const AddEventModal = ({ modalVisible, onClose, groupId }: AddEventModalProps) =
     const { authState } = useAuth();
     const { fetchUserEvents, fetchGroupEvents } = useEvents();
     
-    // Form state
+    // form state
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [date, setDate] = useState(new Date());
     const [imageUri, setImageUri] = useState<string | null>(null);
     const [showImageOptions, setShowImageOptions] = useState(false);
-    
-    // UI state
+    const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
+    const [isTimePickerVisible, setTimePickerVisibility] = useState(false);
+
+    // ui state
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
 
@@ -54,7 +57,7 @@ const AddEventModal = ({ modalVisible, onClose, groupId }: AddEventModalProps) =
         setError('');
     
         try {
-            // Create the event (no image yet)
+            // create event (not the image)
             const response = await axios.post(`${API_URL}/groups/${groupId}/events`, {
                 title,
                 description,
@@ -68,7 +71,7 @@ const AddEventModal = ({ modalVisible, onClose, groupId }: AddEventModalProps) =
             
             const newEventId = response.data.data.id;
             
-            // If an image has been provided, upload it using the new event ID
+            // if image added, upload with eventid
             if (imageUri) {
                 const formData = new FormData();
                 
@@ -118,7 +121,7 @@ const AddEventModal = ({ modalVisible, onClose, groupId }: AddEventModalProps) =
         setImageUri(null);
     };
 
-    // Format date and time for display
+    // format date for display
     const formatDate = (date: Date) => {
         return date.toLocaleDateString('en-US', {
             year: 'numeric',
@@ -127,6 +130,7 @@ const AddEventModal = ({ modalVisible, onClose, groupId }: AddEventModalProps) =
         });
     };
 
+    // format time for display
     const formatTime = (date: Date) => {
         return date.toLocaleTimeString('en-US', {
             hour: 'numeric',
@@ -135,7 +139,44 @@ const AddEventModal = ({ modalVisible, onClose, groupId }: AddEventModalProps) =
         });
     };
 
-    // Image picker
+    const showDatePicker = () => {
+        setDatePickerVisibility(true);
+      };
+    
+    const hideDatePicker = () => {
+        setDatePickerVisibility(false);
+    };
+
+    const showTimePicker = () => {
+        setTimePickerVisibility(true);
+      };
+    
+    const hideTimePicker = () => {
+        setTimePickerVisibility(false);
+    };
+
+    // update date to reflect new day without affecting the time
+    const handleConfirmDate = (selectedDate: Date) => {
+        const newDate = new Date(selectedDate);
+        const hours = date.getHours();
+        const minutes = date.getMinutes();
+        newDate.setHours(hours);
+        newDate.setMinutes(minutes);
+
+        setDate(newDate);
+        hideDatePicker();
+    };
+
+    // update date to reflect new time without affecting the day
+    const handleConfirmTime = (selectedTime: Date) => {
+        const newDate = new Date(date);
+        newDate.setHours(selectedTime.getHours());
+        newDate.setMinutes(selectedTime.getMinutes());
+
+        setDate(newDate);
+        hideTimePicker();
+    };
+
     const handleChooseFromGallery = async () => {
         try {
             const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -162,7 +203,6 @@ const AddEventModal = ({ modalVisible, onClose, groupId }: AddEventModalProps) =
         }
     };
     
-    // Remove selected image
     const handleRemoveImage = () => {
         setImageUri(null);
         setShowImageOptions(false);
@@ -218,14 +258,30 @@ const AddEventModal = ({ modalVisible, onClose, groupId }: AddEventModalProps) =
                             </View>
 
                             <View style={styles.inputContainer}>
-                                <Text style={styles.label}>Date and Time</Text>
-                                <Text style={[styles.dateDisplay, { color: colorScheme === 'dark' ? '#fff' : '#000' }]}>
-                                    {formatDate(date)} at {formatTime(date)}
-                                </Text>
-                                <Text style={styles.dateNote}>
-                                    (Using current date and time for now)
-                                </Text>
+                                <Text style={styles.label}>Date & Time</Text>
+                                <View style={styles.dateTimeContainer}>
+                                    <TouchableOpacity 
+                                        style={styles.dateButton} 
+                                        onPress={showDatePicker}
+                                    >
+                                    <Ionicons name="calendar-outline" size={20} color={accentColor} />
+                                        <Text style={[styles.dateTimeText, { color: colorScheme === 'dark' ? '#fff' : '#000' }]}>
+                                            {formatDate(date)}
+                                        </Text>
+                                    </TouchableOpacity>
+                                    
+                                    <TouchableOpacity 
+                                        style={styles.timeButton} 
+                                        onPress={showTimePicker}
+                                    >
+                                        <Ionicons name="time-outline" size={20} color={accentColor} />
+                                        <Text style={[styles.dateTimeText, { color: colorScheme === 'dark' ? '#fff' : '#000' }]}>
+                                            {formatTime(date)}
+                                        </Text>
+                                    </TouchableOpacity>
+                                </View>
                             </View>
+
 
                             <View style={styles.inputContainer}>
                                 <Text style={styles.label}>Event Image</Text>
@@ -292,6 +348,20 @@ const AddEventModal = ({ modalVisible, onClose, groupId }: AddEventModalProps) =
                 hasExistingImage={!!imageUri}
                 title="Add an Event Image"
             />
+            <DateTimePickerModal
+                isVisible={isDatePickerVisible}
+                mode="date"
+                onConfirm={handleConfirmDate}
+                onCancel={hideDatePicker}
+                date={date}
+            />
+            <DateTimePickerModal
+                isVisible={isTimePickerVisible}
+                mode="time"
+                onConfirm={handleConfirmTime}
+                onCancel={hideTimePicker}
+                date={date}
+            />
         </Modal>
     );
 };
@@ -339,18 +409,33 @@ const styles = StyleSheet.create({
     textArea: {
         minHeight: 100,
     },
-    dateDisplay: {
-        fontSize: 16,
-        padding: 12,
+    dateTimeContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+    },
+    dateButton: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
         borderWidth: 1,
         borderColor: '#ddd',
         borderRadius: 8,
+        padding: 12,
+        marginRight: 8,
     },
-    dateNote: {
-        fontSize: 12,
-        color: 'gray',
-        marginTop: 4,
-        fontStyle: 'italic',
+    timeButton: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: '#ddd',
+        borderRadius: 8,
+        padding: 12,
+        marginLeft: 8,
+    },
+    dateTimeText: {
+        fontSize: 16,
+        marginLeft: 8,
     },
     imagePreviewContainer: {
         marginBottom: 10,

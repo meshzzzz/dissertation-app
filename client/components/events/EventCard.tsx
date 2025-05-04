@@ -18,6 +18,7 @@ interface EventCardProps {
 const EventCard = ({ event, onPress }: EventCardProps) => {
     // button in groupslist, static card in event detail screen
     const isButton = !!onPress;
+    const interestedCount = event.interestedUsers?.length || 0;
 
     // format date helper function
     const formatDate = (dateString: string) => {
@@ -59,7 +60,7 @@ const EventCard = ({ event, onPress }: EventCardProps) => {
                         {event.createdBy.preferredName || `${event.createdBy.firstName}`}
                     </Text>
                     <Image 
-                        source={{ uri: DEFAULT_PFP }} 
+                        source={{ uri: event.createdBy.profileImage || DEFAULT_PFP }} 
                         style={styles.creatorImage}
                     />
                 </View>
@@ -73,12 +74,12 @@ const EventCard = ({ event, onPress }: EventCardProps) => {
         <View style={styles.cardFooter}>
             <View style={styles.footerLeftContent}>
                 <View style={styles.groupBadge}>
-                    <Text style={styles.groupName}>{event.groupName || event.group.name}</Text>
+                    <Text style={styles.groupName}>{event.group.name}</Text>
                 </View>
                 <View style={styles.interestedContainer}>
                     <Ionicons name="people-outline" size={14} color="rgba(255,255,255,0.8)" />
                     <Text style={styles.interestedText}>
-                        {event.interestedUsers.length} interested
+                        {interestedCount} interested
                     </Text>
                 </View>
             </View>

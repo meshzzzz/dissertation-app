@@ -1,3 +1,5 @@
+import { User } from "./User";
+
 export interface Event {
     _id: string;
     title: string;
@@ -7,15 +9,9 @@ export interface Event {
         _id: string;
         name: string;
     };
-    groupId?: string;
-    groupName?: string;
     eventImage: string;
-    interestedUsers: string[];
-    createdBy: {
-        _id: string;
-        firstName: string;
-        lastName: string;
-        preferredName?: string;
-    };
+    interestedUsers?: User[],
+    userInterested: boolean;
+    createdBy: User;
     createdAt: string;
   }
