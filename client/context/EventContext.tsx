@@ -74,15 +74,24 @@ export const EventProvider = ({ children }: { children: React.ReactNode }) => {
 
     // fetch events from user's groups
     const fetchUserEvents = async () => {
+        if (!authState?.token) return;
         try {
             setLoading(prev => ({ ...prev, user: true }));
             setErrors(prev => ({ ...prev, user: null }));
 
-            const response = await axios.get(`${API_URL}/user/events`);
+            const response = await axios.get(`${API_URL}/user/events`, {
+                params: { token: authState.token }
+            });
 
             if (response.data.status === 'ok') {
                 const events = response.data.data;
-                setEventsById(prev => ({...prev,...events}));
+
+                const newEvents: Record<string, Event> = {};
+                events.forEach((event: Event) => {
+                    newEvents[event._id] = event;
+                });
+
+                setEventsById(prev => ({ ...prev, ...newEvents }));
                 setUserEvents(events.map((event: Event) => event._id));
             } else {
                 setErrors(prev => ({ ...prev, user: 'Failed to fetch events' }));
@@ -97,15 +106,23 @@ export const EventProvider = ({ children }: { children: React.ReactNode }) => {
 
     // fetch events for a specific group
     const fetchGroupEvents = async (groupId: string) => {
+        if (!authState?.token) return;
         try {
             setLoading(prev => ({ ...prev, groups: { ...prev.groups, [groupId]: true } }));
             setErrors(prev => ({ ...prev, groups: { ...prev.groups, [groupId]: null } }));
 
-            const response = await axios.get(`${API_URL}/groups/${groupId}/events`);
-
+            const response = await axios.get(`${API_URL}/groups/${groupId}/events`, {
+                params: { token: authState.token }
+            });
+            
             if (response.data.status === 'ok') {
                 const events = response.data.data;
-                setEventsById(prev => ({...prev,...events}));
+                const newEvents: Record<string, Event> = {};
+                events.forEach((event: Event) => {
+                    newEvents[event._id] = event;
+                });
+
+                setEventsById(prev => ({ ...prev, ...newEvents }));
                 setGroupEvents(prev => ({...prev,[groupId]: events.map((event: Event) => event._id)}));
             } else {
                 setErrors(prev => ({ ...prev, groups: { ...prev.groups, [groupId]: 'Failed to fetch group events' }}));
@@ -120,19 +137,23 @@ export const EventProvider = ({ children }: { children: React.ReactNode }) => {
 
     // fetch details for a specific event
     const fetchEventDetails = async (eventId: string): Promise<Event | null> => {
+        if (!authState?.token) return null;
+
         try {
             setLoading(prev => ({ ...prev, events: { ...prev.events, [eventId]: true } }));
             setErrors(prev => ({ ...prev, events: { ...prev.events, [eventId]: null } }));
 
-            const response = await axios.get(`${API_URL}/events/${eventId}`)
+            const response = await axios.get(`${API_URL}/events/${eventId}`, {
+                params: { token: authState.token }
+            });
 
             if (response.data.status === 'ok') {
                 const event = response.data.data;
 
                 setEventsById(prev => ({
                     ...prev,
-                    [eventId]: event
-                }));
+                    [event._id]: event
+                }));                
                 
                 return event;
             } else {
@@ -167,6 +188,7 @@ export const EventProvider = ({ children }: { children: React.ReactNode }) => {
 
     // toggle interest in an event
     const toggleInterest = async (eventId: string): Promise<boolean> => {
+        if (!authState?.token) return false;
         try {
             const response = await axios.post(`${API_URL}/events/${eventId}/interest`)
     
@@ -190,8 +212,9 @@ export const EventProvider = ({ children }: { children: React.ReactNode }) => {
 
     // delete an event
     const deleteEvent = async (eventId: string): Promise<boolean> => {
+        if (!authState?.token) return false;
         try {
-            const response = await axios.delete(`${API_URL}/events/${eventId}`);
+            const response = await axios.delete(`${API_URL}/events/${eventId}`)
 
             if (response.data.status === 'ok') {
                 setEventsById(prev => {
