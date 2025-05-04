@@ -1,7 +1,6 @@
 import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { useTheme } from '@react-navigation/native';
 import { router } from 'expo-router';
 import { AuthContainer } from '@/components/auth/AuthContainer';
 import { AuthButton } from '@/components/auth/AuthButton';
@@ -11,8 +10,12 @@ import { AuthInput } from '@/components/auth/AuthInput';
 export default function Login() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
     const { onLogin } = useAuth();
-    const { colors } = useTheme(); 
+
+    const isValidEmail = (email: string) => {
+        return /^[\w.%+-]+@[\w.-]+\.[a-zA-Z]{1,}$/.test(email);
+    };
 
     const handleSubmit = async () => {
         if (!email || !password) {
@@ -20,15 +23,26 @@ export default function Login() {
             return;
         }
 
+        if (!isValidEmail(email)) {
+            Alert.alert('Error', 'Please enter a valid email address');
+            return;
+        }
+
+        setIsLoading(true);
+
         try {
             const result = await onLogin!(email, password);
+
+            setIsLoading(false);
             
             if (!result?.error) {
                 console.log("Login successful");
+                router.push('/');
             } else {
-                Alert.alert('Error', result.msg || 'Login failed');
+                Alert.alert('Login Failed', result.msg);
             }
         } catch (error) {
+            setIsLoading(false);
             console.error('Login error:', error);
             Alert.alert('Error', 'Something went wrong. Please try again.');
         }
@@ -45,6 +59,9 @@ export default function Login() {
                     icon="user"
                     autoCapitalize='none'
                     keyboardType='email-address'
+                    isValid={email ? isValidEmail(email) : true}
+                    showValidation={email.length > 0}
+                    errorMessage="Please enter a valid email"
                 />
 
                 <AuthInput
@@ -59,7 +76,12 @@ export default function Login() {
                     <Text style={styles.forgotPassword}>Forgot Password?</Text>
                 </TouchableOpacity>
 
-                <AuthButton onPress={handleSubmit} title="Login" />
+                <AuthButton 
+                    onPress={handleSubmit} 
+                    title="Login"
+                    isLoading={isLoading}
+                    disabled={isLoading}
+                />
             </FormContainer>
 
             <View style={styles.signupContainer}>

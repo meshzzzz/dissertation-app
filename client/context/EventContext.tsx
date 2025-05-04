@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import axios from 'axios';
 import { API_URL, useAuth } from '@/context/AuthContext';
 import { Event } from '@/types/Event';
@@ -243,6 +243,13 @@ export const EventProvider = ({ children }: { children: React.ReactNode }) => {
             return false;
         }
     };
+
+    useEffect(() => {
+        setEventsById({});
+        setUserEvents([]);
+        setGroupEvents({});
+    }, [authState?.token]);
+    
 
     const value = {
         eventsById,

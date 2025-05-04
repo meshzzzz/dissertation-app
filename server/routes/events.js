@@ -8,7 +8,7 @@ const upload = require('../middleware/upload');
 const fs = require('fs');
 const cloudinary = require('../config/cloudinary');
 
-const DEFAULT_EVENT_PICTURE = 'https://res.cloudinary.com/dtey1y2fw/image/upload/v1745500388/eventimg_default_c_fill_w_300_h_200_xedger.jpg';
+const DEFAULT_EVENT_PICTURE = 'https://res.cloudinary.com/dtey1y2fw/image/upload/v1746399006/event_d5eq7p.webp';
 
 function formatEventResponse(event) {
     return {

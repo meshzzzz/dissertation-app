@@ -19,14 +19,14 @@ const GroupPinboard = ({ name, memberCount, description, groupImage, upcomingEve
     const colorScheme = useColorScheme();
     const pinboardColor = Colors[colorScheme ?? 'light'].profile.pinboard;
 
-    // Format date helper function
+    // format date helper function
     const formatDate = (dateString: string) => {
         if (!dateString) return '';
         const date = new Date(dateString);
         const day = date.getDate();
         const month = date.toLocaleString('default', { month: 'short' });
 
-        // Add suffix to day (1st, 2nd, 3rd, etc.)
+        // add suffix to day (1st, 2nd, 3rd, etc.)
         let suffix = 'th';
         if (day === 1 || day === 21 || day === 31) suffix = 'st';
         else if (day === 2 || day === 22) suffix = 'nd';
@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
         marginTop: 10,
         marginBottom: 18,
         width: '90%',
-        height: 450,
+        height: 400,
         alignSelf: 'center',
     },
     cornerDot: {
@@ -194,7 +194,7 @@ const styles = StyleSheet.create({
         minHeight: 150,
         padding: 20,
         marginLeft: -20,
-        marginTop: -50
+        marginTop: 50
     },
     descriptionText: {
         fontFamily: 'Itim',
@@ -210,7 +210,7 @@ const styles = StyleSheet.create({
         width: 140,
         height: 200,
         marginLeft: 150,
-        marginTop: -95,
+        marginTop: -200,
         position: 'relative',
     },
     eventTitle: {

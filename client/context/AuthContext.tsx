@@ -108,24 +108,32 @@ export const AuthProvider = ({children}: any) => {
     const login = async (email: string, password: string) => {
         try {
             const result = await axios.post(`${API_URL}/login`, {email, password});
-            const userData = result.data.user;
-            if (userData) {
-                await SecureStore.setItemAsync(USER_DATA_KEY, JSON.stringify(userData));
+
+            // only set auth state on successful login
+            if (result.data.status === 'ok' && result.data.token) {
+                const userData = result.data.user;
+
+                if (userData) {
+                    await SecureStore.setItemAsync(USER_DATA_KEY, JSON.stringify(userData));
+                }
+
+                setAuthState({
+                    token: result.data.token,
+                    authenticated: true,
+                    user: userData
+                })
+
+                axios.defaults.headers.common['Authorization'] = `Bearer ${result.data.token}`;
+                await SecureStore.setItemAsync(TOKEN_KEY, result.data.token);
+
+                return { error: false, data: result.data };
+            } else {
+                return { error: true, msg: result.data.data};
             }
 
-            setAuthState({
-                token: result.data.token,
-                authenticated: true,
-                user: userData
-            })
-
-            axios.defaults.headers.common['Authorization'] = `Bearer ${result.data.token}`;
-            await SecureStore.setItemAsync(TOKEN_KEY, result.data.token);
-
-            return result
-
         } catch (e) {
-            return { error: true, msg: (e as any).response?.data?.data || "Login failed"}
+            const errorMessage = (e as any).response?.data?.data;
+            return { error: true, msg: errorMessage };
         }
     }
 

@@ -6,7 +6,7 @@ import { AuthButton } from '@/components/auth/AuthButton';
 import { useSignup } from '@/context/SignupContext';
 import { useState, useEffect } from 'react';
 
-// !! placeholder interests (could make database driven?)
+// initial interest available to users - allow them to join some popular groups
 const INTERESTS = [
     { id: '1', emoji: '🐶', label: 'Animals' },
     { id: '2', emoji: '🎵', label: 'Music' },
