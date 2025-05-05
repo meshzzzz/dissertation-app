@@ -4,6 +4,8 @@ import { io, Socket } from 'socket.io-client';
 import { API_URL, useAuth } from './AuthContext';
 import { Message } from '@/types/Message';
 
+// extend socket interface to include userId property
+// authenticated user ID associated with socket
 declare module 'socket.io-client' {
     interface Socket {
         userId?: string;
@@ -35,12 +37,11 @@ const ChatContext = createContext<ChatContextState>({
     sendMessage: async () => null,
     sendTypingIndicator: () => {},
 });
-  
 
-export const useChat = () => useContext(ChatContext);
-
+// chat provider wraps the application to provide chat functionality
 export const ChatProvider = ({ children }: { children: ReactNode }) => {
     const { authState } = useAuth();
+    // state for socket and chat data
     const [socket, setSocket] = useState<Socket | null>(null);
     const [messages, setMessages] = useState<Record<string, Message[]>>({});
     const [isConnected, setIsConnected] = useState<boolean>(false);
@@ -48,7 +49,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     const [loading, setLoading] = useState<Record<string, boolean>>({});
     const [error, setError] = useState<Record<string, string | null>>({});
     
-    // initialise socket connection when user is authenticated
+    // initialise socket connection when user is authenticated - set up event listeners
     useEffect(() => {
         if (!authState?.token) return;
         
@@ -110,7 +111,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
         // listen for typing indicators
         socket.on('user_typing', ({ userId, isTyping }) => {
             // skip for current user
-            if (userId === authState?.user?.id) return;
+            if (userId === authState?.user?._id) return;
             
             setTypingUsers(prev => ({
                 ...prev,
@@ -210,3 +211,5 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     
     return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;
 };
+
+export const useChat = () => useContext(ChatContext);

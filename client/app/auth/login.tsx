@@ -71,11 +71,6 @@ export default function Login() {
                     icon="lock"
                     secureTextEntry
                 />
-
-                <TouchableOpacity style={styles.forgotPasswordContainer}>
-                    <Text style={styles.forgotPassword}>Forgot Password?</Text>
-                </TouchableOpacity>
-
                 <AuthButton 
                     onPress={handleSubmit} 
                     title="Login"
@@ -100,14 +95,6 @@ const styles = StyleSheet.create({
         marginTop: 30,
         marginBottom: 20,
         color: '#555',
-    },
-    forgotPasswordContainer: {
-        alignSelf: 'flex-end',
-        marginTop: 5,
-    },
-    forgotPassword: {
-        fontSize: 14,
-        color: '#666',
     },
     signupContainer: {
         flexDirection: 'row',

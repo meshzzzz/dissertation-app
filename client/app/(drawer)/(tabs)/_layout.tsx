@@ -15,7 +15,6 @@ function TabBarIcon(props: {
 
 export default function TabLayout() {
     const colorScheme = useColorScheme();
-    const primaryColor = Colors[colorScheme ?? 'light'].primary;
     
     const { authState } = useAuth();
 
@@ -54,13 +53,6 @@ export default function TabLayout() {
                     title: 'Groups',
                     tabBarIcon: ({ color }) => <TabBarIcon name="people-outline" color={color} />,
                     headerShown: false
-                }}
-            />
-            <Tabs.Screen
-                name="your-uni"
-                options={{
-                    title: 'Your University',
-                    tabBarIcon: ({ color }) => <TabBarIcon name="school-outline" color={color} />,
                 }}
             />
             <Tabs.Screen

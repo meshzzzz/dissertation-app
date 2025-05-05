@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useReducer, ReactNode } from 'react';
 
 export interface SignupFormFields {
-    // step 1 fields
+    // step 1 fields: basic info
     email: string;
     firstName: string;
     lastName: string;
@@ -9,12 +9,12 @@ export interface SignupFormFields {
     password: string;
     confirmPassword: string;
 
-    // step 2 fields
+    // step 2 fields: academic info
     courseOfStudy: string;
     yearOfEntry: string;
     yearOfGraduation: string;
 
-    // step 3 fields
+    // step 3 fields: interests for group mapping
     interests: string[];
 };
 
@@ -32,7 +32,7 @@ type ValidationAction = {
     value: boolean 
 };
 
-// initial states
+// empty initial states
 export const initialForm: SignupFormFields = {
     // step 1
     email: '',
@@ -47,6 +47,7 @@ export const initialForm: SignupFormFields = {
     interests: []
 };
 
+// initial validation state - all invalid except optional interests
 export const initialValidation: ValidationFlags = {
     email: false,
     firstName: false,
@@ -60,6 +61,7 @@ export const initialValidation: ValidationFlags = {
     interests: true
 };
 
+// validator functions for each field - each returns true if field is valid otherwise false
 export const validators: { 
     [K in keyof SignupFormFields]?: (value: any, form?: SignupFormFields) => boolean 
 } = {
@@ -77,13 +79,15 @@ export const validators: {
         const gradYear = parseInt(val);
         return gradYear >= entryYear && gradYear <= entryYear + 10;
     },
-    interests: (val) => true
+    interests: (val) => true // optional field so always true
 };
 
+// reducer function for form state - updates form with new values while preserving other fields
 function formReducer(state: SignupFormFields, action: FormAction): SignupFormFields {
     return { ...state, [action.field]: action.value };
 }
-  
+
+// reducer function for validation state - updates validation flags while preserving other flags
 function validationReducer(state: ValidationFlags, action: ValidationAction): ValidationFlags {
     return { ...state, [action.field]: action.value };
 }
@@ -104,7 +108,7 @@ interface SignupProviderProps {
     children: ReactNode;
 };
 
-// provider component
+// signup provider wraps multi-step signup to manage signup form state
 export function SignupProvider({ children }: SignupProviderProps) {
     const [currentStep, setCurrentStep] = React.useState(1);
     const [form, dispatchForm] = useReducer(formReducer, initialForm);
@@ -126,7 +130,7 @@ export function SignupProvider({ children }: SignupProviderProps) {
         handleChange('interests', interests);
     };
   
-    // check if a specific step is valid
+    // check if all fields in a specific step are valid
     const isStepValid = (step: number): boolean => {
         switch (step) {
             case 1:
@@ -151,14 +155,10 @@ export function SignupProvider({ children }: SignupProviderProps) {
         setInterests
     };
   
-    return (
-        <SignupContext.Provider value={value}>
-            {children}
-        </SignupContext.Provider>
-    );
+    return <SignupContext.Provider value={value}>{children}</SignupContext.Provider>
 }
 
-// custom hook to use the context
+// hook to use the signup context
 export function useSignup() {
     const context = useContext(SignupContext);
     if (context === undefined) {

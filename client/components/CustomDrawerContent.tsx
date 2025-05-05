@@ -1,7 +1,8 @@
 import { useAuth } from "@/context/AuthContext";
 import { DrawerContentScrollView, DrawerItem, DrawerItemList } from "@react-navigation/drawer";
 import { useTheme } from "@react-navigation/native";
-import { Alert, View } from "react-native";
+import { Alert, View, StyleSheet } from "react-native";
+import { Text } from "./Themed";
 import ThemeToggle from "./ThemeToggle";
 
 export default function CustomDrawerContent(props: any) {
@@ -32,6 +33,11 @@ export default function CustomDrawerContent(props: any) {
                 backgroundColor: colors.card,
             }}
             >
+                <View style={styles.qlinkHeaderContainer}>
+                    <Text style={styles.qlinkHeaderText}>
+                        QLink
+                    </Text>
+                </View>
                 <DrawerItemList {...props} />
                 <DrawerItem 
                     label={"Logout"} 
@@ -39,11 +45,27 @@ export default function CustomDrawerContent(props: any) {
                     labelStyle={{color: colors.text}} 
                 />
             </DrawerContentScrollView>
-            <View className="absolute bottom-0 pb-10 items-center">
+            <View style={styles.themeToggle}>
                 <ThemeToggle />
             </View>
         </View>
     )
 }
+
+const styles = StyleSheet.create({
+    qlinkHeaderContainer: {
+        marginLeft: 10,
+        marginBottom: 10
+    },
+    qlinkHeaderText: {
+        fontFamily: 'LondrinaShadow',
+        fontSize: 50
+    },
+    themeToggle: {
+        marginLeft: 10,
+        marginBottom: 50
+    }
+})
+
 
 

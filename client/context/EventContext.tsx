@@ -27,13 +27,6 @@ interface EventContextProps {
 
 const EventContext = createContext<EventContextProps | undefined>(undefined);
 
-export const useEvents = () => {
-    const context = useContext(EventContext);
-    if (!context) {
-        throw new Error('useEvents must be used within an EventProvider');
-    }
-    return context;
-};
 
 export const EventProvider = ({ children }: { children: React.ReactNode }) => {
     const { authState } = useAuth();
@@ -265,9 +258,13 @@ export const EventProvider = ({ children }: { children: React.ReactNode }) => {
         deleteEvent
     };
 
-    return (
-        <EventContext.Provider value={value}>
-            {children}
-        </EventContext.Provider>
-    );
+    return <EventContext.Provider value={value}>{children}</EventContext.Provider>;
+};
+
+export const useEvents = () => {
+    const context = useContext(EventContext);
+    if (!context) {
+        throw new Error('useEvents must be used within an EventProvider');
+    }
+    return context;
 };

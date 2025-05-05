@@ -35,16 +35,17 @@ interface PostsContextType {
 
 const PostsContext = createContext<PostsContextType | undefined>(undefined);
 
+// posts provider wraps application to provide posts data and functionality
 export const PostsProvider = ({ children }: { children: ReactNode }) => {
     const { authState } = useAuth();
 
-    // post data
+    // post data state
     const [postsById, setPostsById] = useState<Record<string, Post>>({});
     const [feedPosts, setFeedPosts] = useState<string[]>([]);
     const [groupPosts, setGroupPosts] = useState<Record<string, string[]>>({});
     const [myPosts, setMyPosts] = useState<string[]>([]);
 
-    // other statuses
+    // loading states of different post lists
     const [loading, setLoading] = useState<LoadingState>({
         feed: false,
         groups: {},
@@ -52,6 +53,7 @@ export const PostsProvider = ({ children }: { children: ReactNode }) => {
         myPosts: false
     });
 
+    // error states of different post lists
     const [errors, setErrors] = useState<ErrorState>({
         feed: null,
         groups: {},
@@ -60,6 +62,7 @@ export const PostsProvider = ({ children }: { children: ReactNode }) => {
     });
 
     // helper to add posts to cache
+    // tkaes an array of posts and adds them to postsById state
     const addPostsToCache = (posts: Post[]) => {
         const newPosts: Record<string, Post> = {};
         posts.forEach(post => {
@@ -73,6 +76,7 @@ export const PostsProvider = ({ children }: { children: ReactNode }) => {
     };
 
     // helper to remove a post from all lists
+    // removes post from feed posts, my posts. group posts, and cache
     const removePostFromLists = (postId: string) => {
         // remove from feed posts, my posts, and group posts
         setFeedPosts(prev => prev.filter(id => id !== postId));
@@ -94,6 +98,7 @@ export const PostsProvider = ({ children }: { children: ReactNode }) => {
     };
 
     // update a post's comment count locally
+    // used when comments are added/deleted without refetching the post
     const updatePostCommentCount = (postId: string, change: number) => {
         setPostsById(prev => {
             const post = prev[postId];
@@ -240,7 +245,7 @@ export const PostsProvider = ({ children }: { children: ReactNode }) => {
         }
 
         try {
-            // set loading
+            // set loading/error state
             setLoading(prev => ({ 
                 ...prev, 
                 posts: { ...prev.posts, [postId]: true } 
@@ -353,14 +358,10 @@ export const PostsProvider = ({ children }: { children: ReactNode }) => {
         updatePostCommentCount
     };
   
-    return (
-        <PostsContext.Provider value={value}>
-            {children}
-        </PostsContext.Provider>
-    );
+    return <PostsContext.Provider value={value}>{children}</PostsContext.Provider>
 };
 
-// custom hook to use the PostsContext
+// hook to use the PostsContext
 export const usePosts = () => {
     const context = useContext(PostsContext);
     if (context === undefined) {

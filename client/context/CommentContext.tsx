@@ -16,14 +16,18 @@ interface CommentContextType {
   
 const CommentContext = createContext<CommentContextType | undefined>(undefined);
 
+// helper function to build a nested comment tree from flat comment array
+// maps parent-child relationships and organises comments into tree structure
 function buildCommentTree(flatComments: Comment[]): CommentTreeNode[] {
     const map = new Map<string, CommentTreeNode>();
     const roots: CommentTreeNode[] = [];
   
+    // create all nodes with empty replies arrays
     flatComments.forEach(c => {
         map.set(c.id, { ...c, replies: [] });
     });
   
+    // connect parents and children
     map.forEach(comment => {
         if (comment.parent) {
             const parent = map.get(comment.parent);
@@ -36,6 +40,7 @@ function buildCommentTree(flatComments: Comment[]): CommentTreeNode[] {
     return roots;
 }
 
+// helper function to update a specific comment in the tree
 function updateCommentTree(
     tree: CommentTreeNode[],
     commentId: string,
@@ -53,6 +58,7 @@ function updateCommentTree(
     });
 }
 
+// helper function to remove a comment from the tree + replies
 function removeCommentFromTree(
     tree: CommentTreeNode[], 
     commentId: string
@@ -66,6 +72,8 @@ function removeCommentFromTree(
                 : []
         }));
 }
+
+// helper function to find a comment in the tree by ID
 function findCommentInTree(
     tree: CommentTreeNode[], 
     commentId: string
@@ -81,6 +89,7 @@ function findCommentInTree(
     return null;
 }
   
+// comment provider wraps application to provide comment functionality
 export const CommentProvider = ({ children }: { children: ReactNode }) => {
     const { authState } = useAuth();
     const { postsById, updatePostCommentCount } = usePosts();
@@ -90,7 +99,7 @@ export const CommentProvider = ({ children }: { children: ReactNode }) => {
     const [isLoadingComments, setIsLoadingComments] = useState<Record<string, boolean>>({});
     const [commentErrors, setCommentErrors] = useState<Record<string, string | null>>({});
 
-    // fetch top-level comments for a post
+    // fetch comments for a specific post + build tree structure
     const fetchComments = async (postId: string) => {
         if (!authState?.token) return;
     
@@ -232,7 +241,7 @@ export const CommentProvider = ({ children }: { children: ReactNode }) => {
     return <CommentContext.Provider value={value}>{children}</CommentContext.Provider>;
 };
 
-// custom hook to use the CommentContext
+// hook to use the CommentContext
 export const useComments = () => {
     const context = useContext(CommentContext);
     if (context === undefined) {
