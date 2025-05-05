@@ -38,7 +38,7 @@ export default function GroupDetail() {
         fetchGroupPosts 
     } = usePosts();
 
-    const { getUpcomingEvent } = useEvents();
+    const { getUpcomingEvent, fetchGroupEvents, loading: eventsLoading } = useEvents();
 
     const [loadingGroup, setLoadingGroup] = useState(true);
     const [group, setGroup] = useState<Group | null>(null);
@@ -84,6 +84,7 @@ export default function GroupDetail() {
         // load group posts
         if (authState?.token) {
             fetchGroupPosts(groupId);
+            fetchGroupEvents(groupId);
         }
     }, [groupId, authState]);
 
@@ -138,7 +139,8 @@ export default function GroupDetail() {
     const isPostsLoading = loading.groups[groupId];
     const postsError = errors.groups[groupId];
 
-    const upcomingEvent = groupId ? getUpcomingEvent(groupId) : null;
+    const isEventsLoading = eventsLoading.groups[groupId];
+    const upcomingEvent = !isEventsLoading && groupId ? getUpcomingEvent(groupId) : null;
 
     if (loadingGroup) {
         return (

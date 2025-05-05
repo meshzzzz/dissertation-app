@@ -56,6 +56,11 @@ const PostsContainer = () => {
         }).toLowerCase();
     };
 
+    const truncateText = (text: string, maxLength: number = 16) => {
+        if (!text) return '';
+        return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+    };
+
     return (
         <View style={[
             styles.container,
@@ -89,7 +94,9 @@ const PostsContainer = () => {
                                 ]}
                             >
                                 <View style={{ backgroundColor: 'transparent' }}>
-                                    <Text style={styles.postTitle}>{post.title || post.content.substring(0, 20) + '...'}</Text>
+                                    <Text style={styles.postTitle}>
+                                    {post.title ? truncateText(post.title) : truncateText(post.content, 20)}
+                                    </Text>
                                     <Text style={styles.postDate}>
                                         {formatDate(post.createdAt)} • {formatTime(post.createdAt)}
                                     </Text>
@@ -99,7 +106,7 @@ const PostsContainer = () => {
                                     { backgroundColor: accentColor }
                                 ]}>
                                     <Text style={styles.postTagText}>
-                                        {post.group?.name || 'Personal'}
+                                        {truncateText(post.group?.name || "Group", 12)}
                                     </Text>
                                 </View>
                             </TouchableOpacity>
@@ -172,9 +179,9 @@ const styles = StyleSheet.create({
     },
     noPostsText: {
         fontSize: 14,
-        fontStyle: 'italic',
-        color: '#888',
+        color: 'white',
         marginVertical: 10,
+        zIndex: 100
     }
 });
 

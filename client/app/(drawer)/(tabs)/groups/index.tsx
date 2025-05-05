@@ -163,10 +163,17 @@ export default function Groups() {
     // filter the groups based on search query w/ memoisation
     const groupsToDisplay = useMemo(() => {
         const base = activeTab === 'all' ? allGroups : myGroups;
-        if (!searchQuery) return base;
+
+        if (searchQuery.trim()) {
         return base.filter(group =>
             group.name.toLowerCase().includes(searchQuery.toLowerCase())
         );
+    }
+
+    // always show the QMUL group first in either tab (unless there is a search query)
+    const qmulGroup = base.find(group => group.name === 'QMUL');
+    const otherGroups = base.filter(group => group.name !== 'QMUL');
+    return qmulGroup ? [qmulGroup, ...otherGroups] : base;
     }, [searchQuery, activeTab, allGroups, myGroups]);
 
     const handleAddPress = () => {

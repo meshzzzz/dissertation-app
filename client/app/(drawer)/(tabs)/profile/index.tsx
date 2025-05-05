@@ -83,7 +83,7 @@ export default function Profile() {
                     program: response.data?.data?.courseOfStudy 
                         ? `${yearOfStudy}${response.data.data.courseOfStudy}`
                         : 'Not Set',
-                    aboutMe: response.data?.data?.aboutMe || "Nice to meet you!",
+                    aboutMe: response.data?.data?.aboutMe || "Nice to meet you! I haven't set an about me yet, but I'm looking forward to it!",
                     widgets: {
                         country: response.data?.data?.country || 'Not Set',
                         campus: response.data?.data?.campus || 'Not Set',

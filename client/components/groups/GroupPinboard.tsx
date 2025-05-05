@@ -71,14 +71,22 @@ const GroupPinboard = ({ name, memberCount, description, groupImage, upcomingEve
                     </View>
                 </View>
                 {/* description postit */}
-                <ImageBackground 
-                    source={require('@/assets/images/pink_postit.png')} 
-                    style={styles.postitContainer}
-                >
-                    <Text style={styles.descriptionText}>
-                        {description}
-                    </Text>
-                </ImageBackground>
+                <View style={styles.descriptionContainer}>
+                    <Image 
+                            source={require('@/assets/images/cutepin.png')}
+                            style={styles.cutePin}
+                            resizeMode="contain"
+                    />
+                    <ImageBackground 
+                        source={require('@/assets/images/pink_postit.png')} 
+                        style={styles.postitContainer}
+                    >
+                        <Text style={styles.descriptionText}>
+                            {description}
+                        </Text>
+                    </ImageBackground>
+                </View>
+                {/* upcoming event note */}
                 <ImageBackground 
                     source={require('@/assets/images/notepaper.png')} 
                     style={styles.eventsNoteContainer}
@@ -164,8 +172,8 @@ const styles = StyleSheet.create({
     pinboardTitle: {
         fontFamily: 'LondrinaShadow',
         fontSize: 40,
-        marginBottom: 6,
-        marginTop: 4,
+        marginTop: 30,
+        marginLeft: 8
     },
     polaroidContainer: {
         marginTop: 10,
@@ -188,6 +196,17 @@ const styles = StyleSheet.create({
         fontSize: 11,
         textAlign: 'center',
         color: 'black',
+    },
+    descriptionContainer: {
+        position: 'relative',
+    },
+    cutePin: {
+        position: 'absolute',
+        width: 12,
+        height: 19,
+        marginLeft: 60,
+        marginTop: 50,
+        zIndex: 10,
     },
     postitContainer: {
         width: '80%',

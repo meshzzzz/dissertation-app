@@ -22,6 +22,9 @@ const INTEREST_TO_GROUP_MAP = {
     '12': 'Photography'
 };
 
+// all users should be added to the QMUL group on signup
+const DEFAULT_GROUP = 'QMUL';
+
 // signup route
 router.post('/signup', async(req, res) => {
     const {
@@ -57,26 +60,34 @@ router.post('/signup', async(req, res) => {
             interests
         });
 
+        let groupsToJoin = [];
+        const qmulGroup = await Group.findOne({ name: DEFAULT_GROUP });
+        groupsToJoin.push(qmulGroup);
+
         // if the user selected interests, find the corresponding groups and add them
         if (interests && interests.length > 0) {
             // map interest IDs to group names
-            const groupNames = interests.map(interestId => INTEREST_TO_GROUP_MAP[interestId])
-                               .filter(name => name);
-
-            const groups = await Group.find({ name: { $in: groupNames } });
-            if (groups.length > 0) {
-                // add group IDs to user's groups array
-                const groupIds = groups.map(group => group._id);
-                newUser.groups = groupIds;
-                await newUser.save();
-                
-                // add user to each group's members array
-                for (const group of groups) {
-                    group.members.push(newUser._id);
-                    await group.save();
-                }
+            const interestGroupNames = interests.map(interestId => INTEREST_TO_GROUP_MAP[interestId])
+                                      .filter(name => name);
+            
+            // find all the interest groups
+            const interestGroups = await Group.find({ name: { $in: interestGroupNames } });
+            if (interestGroups.length > 0) {
+                groupsToJoin = [...groupsToJoin, ...interestGroups];
             }
         }
+
+        // add group IDs to user's groups array
+        const groupIds = groupsToJoin.map(group => group._id);
+        newUser.groups = groupIds;
+        await newUser.save();
+        
+        // add user to each group's members array
+        for (const group of groupsToJoin) {
+            group.members.push(newUser._id);
+            await group.save();
+        }
+
         res.send({status: "ok", data: "User created"});
     } catch (error) {
         console.error("Signup error:", error);

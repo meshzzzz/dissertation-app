@@ -22,10 +22,6 @@ export default function MessageInput({
 
     return (
         <View style={styles.container}>
-            <TouchableOpacity style={styles.attachButton}>
-                <Ionicons name="camera" size={22} color="#999" />
-            </TouchableOpacity>
-            
             <View style={styles.inputContainer}>
                 <TextInput
                     style={styles.input}
@@ -65,10 +61,6 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         paddingHorizontal: 16,
-    },
-    attachButton: {
-        marginRight: 8,
-        padding: 4,
     },
     inputContainer: {
         flex: 1,
