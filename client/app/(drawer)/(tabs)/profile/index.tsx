@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { SafeAreaView, StyleSheet } from 'react-native';
+import { Alert, SafeAreaView, StyleSheet } from 'react-native';
 import { View } from '@/components/Themed';
 import { useTheme } from '@react-navigation/native';
 import { useColorScheme } from '@/components/useColorScheme';
@@ -9,7 +9,6 @@ import axios from 'axios';
 import * as ImagePicker from 'expo-image-picker';
 import ImagePickerModal from '@/components/images/ImagePickerModal';
 import EditProfileModal from '@/components/profile/EditProfileModal';
-import Popup from '@/components/Popup';
 import ProfileHeader from '@/components/profile/ProfileHeader';
 import Pinboard from '@/components/profile/Pinboard';
 import PostsContainer from '@/components/profile/PostsContainer';
@@ -23,11 +22,7 @@ export default function Profile() {
     const [editModalVisible, setEditModalVisible] = useState(false);
     const [uploadLoading, setUploadLoading] = useState(false);
     const [profileImage, setProfileImage] = useState({ uri: "https://placekitten.com/300/300" });
-    const [notification, setNotification] = useState({
-        visible: false,
-        type: 'success' as 'success' | 'error',
-        message: ''
-    });
+
     const [userData, setUserData] = useState<{
         name: string;
         program: string;
@@ -104,11 +99,7 @@ export default function Profile() {
 
     const handleProfileUpdate = () => {
         getData(); // refresh profile data
-        setNotification({
-            visible: true,
-            type: 'success',
-            message: 'Profile updated successfully!'
-        });
+        Alert.alert("Success", "Profile updated successfully!");
     }
 
     const handleCameraUpload = async () => {
@@ -166,27 +157,15 @@ export default function Profile() {
                     setProfileImage({ uri: response.data.data.profileImage });
                     // refresh user data
                     getData();
-                    setNotification({
-                        visible: true,
-                        type: 'success',
-                        message: 'Profile picture updated!'
-                    });
+                    Alert.alert("Success", "Profile picture updated!");
                 } else {
                     console.error('Upload failed:', response.data);
-                    setNotification({
-                        visible: true,
-                        type: 'error',
-                        message: 'Failed to upload image. Please try again.'
-                    });
+                    Alert.alert("Error", "Failed to upload image. Please try again.");
                 }
             }
         } catch (error) {
             console.error('Error taking photo:', error);
-            setNotification({
-                visible: true,
-                type: 'error',
-                message: 'Error taking photo. Please try again.'
-            });
+            Alert.alert("Error", "Error taking photo. Please try again.");
         } finally {
             setUploadLoading(false);
             setPfpModalVisible(false);
@@ -245,27 +224,15 @@ export default function Profile() {
                 if (response.data.status === 'ok') {
                     setProfileImage({ uri: response.data.data.profileImage });
                     getData();
-                    setNotification({
-                        visible: true,
-                        type: 'success',
-                        message: 'Profile picture updated!'
-                    });
+                    Alert.alert("Success", "Profile picture updated!");
                 } else {
                     console.error('Upload failed:', response.data);
-                    setNotification({
-                        visible: true,
-                        type: 'error',
-                        message: 'Failed to upload image. Please try again.'
-                    });
+                    Alert.alert("Error", "Failed to upload image. Please try again.");
                 }
             }
         } catch (error) {
             console.error('Error selecting photo:', error);
-            setNotification({
-                visible: true,
-                type: 'error',
-                message: 'Error selecting photo. Please try again.'
-            });
+            Alert.alert("Error", "Error selecting photo. Please try again.");
         } finally {
             setUploadLoading(false);
             setPfpModalVisible(false);
@@ -280,32 +247,16 @@ export default function Profile() {
     
             if (response.data.status === 'ok') {
                 getData(); 
-                setNotification({
-                    visible: true,
-                    type: 'success',
-                    message: 'Profile picture removed successfully'
-                });
+                Alert.alert("Success", "Profile picture removed successfully");
             } else {
-                setNotification({
-                    visible: true,
-                    type: 'error',
-                    message: 'Failed to remove profile picture'
-                });
+                Alert.alert("Error", "Failed to remove profile picture");
             }
         } catch (error) {
             console.error('Remove image error:', error);
-            setNotification({
-                visible: true,
-                type: 'error',
-                message: 'Error removing profile picture'
-            });
+            Alert.alert("Error", "Error removing profile picture");
         } finally {
             setPfpModalVisible(false);
         }
-    };
-    
-    const closeNotification = () => {
-        setNotification({...notification, visible: false});
     };
 
     return (
@@ -360,16 +311,6 @@ export default function Profile() {
                     setEditModalVisible(false);
                     setPfpModalVisible(true);
                 }}
-            />
-
-            {/* notification popup */}
-            <Popup
-                visible={notification.visible}
-                type={notification.type}
-                message={notification.message}
-                onClose={closeNotification}
-                autoClose={true}
-                duration={3000}
             />
         </SafeAreaView>
     );

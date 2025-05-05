@@ -1,11 +1,10 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
-import { SafeAreaView, StatusBar, ScrollView, StyleSheet, ActivityIndicator } from 'react-native';
+import { SafeAreaView, StatusBar, ScrollView, StyleSheet, ActivityIndicator, Alert } from 'react-native';
 import { Text, View } from '@/components/Themed';
 import { useTheme } from '@react-navigation/native';
-import { useColorScheme } from '@/components/useColorScheme';
 import { API_URL, useAuth } from '@/context/AuthContext';
 import axios from 'axios';
-import { useFocusEffect, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { usePermissions } from '@/hooks/usePermissions';
 import SearchBar from '@/components/SearchBar';
 import TabButtons, { TabOption } from '@/components/TabButtons';
@@ -13,12 +12,10 @@ import PillButton from '@/components/PillButton';
 import GroupCard from '@/components/groups/GroupCard';
 import JoinGroupModal from '@/components/groups/JoinGroupModal';
 import AddGroupModal from '@/components/groups/AddGroupModal';
-import Popup from '@/components/Popup';
 import { Group } from '@/types/Group';
 
 export default function Groups() {
     const { colors } = useTheme();
-    const colorScheme = useColorScheme();
     const router = useRouter();
     const { authState } = useAuth();
     const { isSuperuser } = usePermissions();
@@ -42,24 +39,12 @@ export default function Groups() {
     const [joiningGroup, setJoiningGroup] = useState(false);
     // state for add group modal
     const [addGroupModalVisible, setAddGroupModalVisible] = useState(false);
-    // state for success/error notification popup
-    const [notification, setNotification] = useState({
-        visible: false,
-        type: 'success' as 'success' | 'error',
-        message: ''
-    });
 
     // tab options
     const tabOptions: TabOption[] = [
     { id: 'my', label: 'My Groups' },
     { id: 'all', label: 'All Groups' }
     ];
-
-    useFocusEffect(
-        useCallback(() => {
-          loadData();
-        }, [])
-    );
 
     // load groups data
     const loadData = async () => {
@@ -121,38 +106,28 @@ export default function Groups() {
             if (response.data.status === 'ok') {
                 // refresh groups data
                 await loadData();
-                
-                // show success notification
-                setNotification({
-                    visible: true,
-                    type: 'success',
-                    message: `You've joined ${selectedGroup.name}!`
-                });
-                
                 // close modal
                 setJoinModalVisible(false);
+                
+                Alert.alert(
+                    "Success",
+                    `You've joined ${selectedGroup.name}!`
+                );
             } else {
-                setNotification({
-                    visible: true,
-                    type: 'error',
-                    message: response.data.data || 'Failed to join group'
-                });
+                Alert.alert(
+                    "Error",
+                    response.data.data || 'Failed to join group'
+                );
             }
         } catch (error) {
             console.error("Error joining group:", error);
-            setNotification({
-                visible: true,
-                type: 'error',
-                message: 'Network error when joining group'
-            });
+            Alert.alert(
+                "Error",
+                'Network error when joining group'
+            );
         } finally {
             setJoiningGroup(false);
         }
-    };
-
-    // close notification
-    const closeNotification = () => {
-        setNotification({...notification, visible: false});
     };
 
     // check if user has joined a group
@@ -178,6 +153,11 @@ export default function Groups() {
 
     const handleAddPress = () => {
         setAddGroupModalVisible(true);
+    };
+
+    const handleGroupCreationSuccess = () => {
+        loadData();
+        Alert.alert("Success", "Group created successfully!");
     };
     
     return (
@@ -255,25 +235,12 @@ export default function Groups() {
                     isLoading={joiningGroup}
                 />
             )}
-            
-            {/* notification popup */}
-            <Popup
-                visible={notification.visible}
-                type={notification.type}
-                message={notification.message}
-                onClose={closeNotification}
-                autoClose={true}
-                duration={3000}
-            />
 
             {/* add group modal */}
             <AddGroupModal 
                 modalVisible={addGroupModalVisible}
                 onClose={() => setAddGroupModalVisible(false)}
-                onSuccess={() => {
-                    loadData(); 
-                    setNotification({ visible: true, type: 'success', message: 'Group created successfully!' });
-                }}
+                onSuccess={handleGroupCreationSuccess}
             />
         </SafeAreaView>
     );

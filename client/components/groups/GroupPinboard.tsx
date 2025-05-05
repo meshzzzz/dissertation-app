@@ -205,7 +205,7 @@ const styles = StyleSheet.create({
         width: 12,
         height: 19,
         marginLeft: 60,
-        marginTop: 50,
+        marginTop: 30,
         zIndex: 10,
     },
     postitContainer: {
@@ -213,7 +213,7 @@ const styles = StyleSheet.create({
         minHeight: 150,
         padding: 20,
         marginLeft: -20,
-        marginTop: 50
+        marginTop: 30
     },
     descriptionText: {
         fontFamily: 'Itim',
@@ -229,7 +229,7 @@ const styles = StyleSheet.create({
         width: 140,
         height: 200,
         marginLeft: 150,
-        marginTop: -200,
+        marginTop: -180,
         position: 'relative',
     },
     eventTitle: {

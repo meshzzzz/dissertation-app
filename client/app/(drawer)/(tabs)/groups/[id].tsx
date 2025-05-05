@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   SafeAreaView, 
   StyleSheet, 
@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { Text, View } from '@/components/Themed';
-import { Stack, useLocalSearchParams, router, useFocusEffect } from 'expo-router';
+import { Stack, useLocalSearchParams, router } from 'expo-router';
 import { useAuth, API_URL } from '@/context/AuthContext';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useColorScheme } from '@/components/useColorScheme';
@@ -45,12 +45,6 @@ export default function GroupDetail() {
     const [groupError, setGroupError] = useState<string | null>(null);
     const [isAddPostModalVisible, setIsAddPostModalVisible] = useState(false);
     const [isEditGroupModalVisible, setIsEditGroupModalVisible] = useState(false);
-    
-    useFocusEffect(
-        useCallback(() => {
-            loadGroupData();
-        }, [])
-    );
 
     // load group data
     const loadGroupData = async () => {

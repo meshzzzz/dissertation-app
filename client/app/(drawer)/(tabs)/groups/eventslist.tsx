@@ -9,7 +9,6 @@ import {
 } from 'react-native';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
 import { Text } from '@/components/Themed';
-import { useAuth, API_URL } from '@/context/AuthContext';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';

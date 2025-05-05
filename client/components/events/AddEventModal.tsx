@@ -9,7 +9,8 @@ import {
     KeyboardAvoidingView, 
     Platform, 
     TouchableWithoutFeedback, 
-    Keyboard
+    Keyboard,
+    Alert
 } from 'react-native';
 import { Text, View } from '@/components/Themed';
 import { Ionicons } from '@expo/vector-icons';
@@ -106,9 +107,18 @@ const AddEventModal = ({ modalVisible, onClose, groupId }: AddEventModalProps) =
     
             resetForm();
             onClose();
+
+            Alert.alert(
+                "Success",
+                "Event created successfully!"
+            );
         } catch (err) {
             setError('Could not add event. Please try again.');
             console.error('Add event error:', err);
+            Alert.alert(
+                "Error",
+                "Failed to create event. Please try again."
+            );
         } finally {
             setIsLoading(false);
         }
@@ -198,6 +208,7 @@ const AddEventModal = ({ modalVisible, onClose, groupId }: AddEventModalProps) =
         } catch (error) {
             console.error('Error selecting photo:', error);
             setError('Error selecting photo. Please try again.');
+            Alert.alert("Error", "Failed to select image. Please try again.");
         } finally {
             setShowImageOptions(false);
         }
