@@ -24,6 +24,7 @@ const CommentCard = ({
     const colorScheme = useColorScheme();
     const textColor = Colors[colorScheme ?? 'light'].text;
     const secondaryColor = Colors[colorScheme ?? 'light'].secondary;
+    const commentBgColor = colorScheme === 'dark' ? '#0E2A4F' : '#f6eef5';
 
     const { toggleLike } = useComments();
 
@@ -130,7 +131,7 @@ const CommentCard = ({
     return (
         <View style={styles.container}>
             {/* comment card content wrapped in box */}
-            <View style={styles.commentBox}>
+            <View style={[styles.commentBox, {backgroundColor: commentBgColor}]}>
                 <CommentContent
                     comment={comment}
                     textColor={textColor}
@@ -159,7 +160,6 @@ const styles = StyleSheet.create({
         marginVertical: 10,
     },
     commentBox: {
-        backgroundColor: '#f6eef5',
         borderRadius: 16,
         padding: 16,
     },

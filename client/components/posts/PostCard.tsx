@@ -33,7 +33,9 @@ const PostCard = ({
     const secondaryColor = Colors[colorScheme ?? 'light'].secondary;
     const [isLikeLoading, setIsLikeLoading] = useState(false);
     const [isDeleteLoading, setIsDeleteLoading] = useState(false);
-    
+
+    // same color as profile background - light posts on a black background are a bit blinding
+    const postBgColor = colorScheme === 'dark' ? '#1E3A5F' : '#EEF2F6';
     // get post data from context
     const post = postsById[id];
     if (!post) return null;
@@ -161,11 +163,11 @@ const PostCard = ({
     );
 
     if (isInPostPage) {
-        return <View style={styles.container}>{cardContent}</View>;
+        return <View style={[styles.container, {backgroundColor: postBgColor}]}>{cardContent}</View>;
     } else {
         return (
             <TouchableOpacity 
-                style={styles.container}
+                style={[styles.container, {backgroundColor: postBgColor}]}
                 onPress={onPress}
                 activeOpacity={onPress ? 0.7 : 1}
             >
@@ -180,7 +182,6 @@ const styles = StyleSheet.create({
         borderRadius: 16,
         padding: 20,
         marginBottom: 16,
-        backgroundColor: '#EEF2F6'
     },
     header: {
         flexDirection: 'row',

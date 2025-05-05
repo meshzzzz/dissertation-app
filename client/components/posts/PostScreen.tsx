@@ -185,7 +185,6 @@ const PostScreen = ({ postId, showGroup=false }: PostScreenProps) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
     },
     scrollContainer: {
         flex: 1,

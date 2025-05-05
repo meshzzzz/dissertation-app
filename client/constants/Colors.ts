@@ -2,11 +2,6 @@ const primaryColorLight = '#00529C';
 const primaryColorDark = '#003060';
 const secondaryColorLight = '#DC80B1';
 const secondaryColorDark = '#5b1140';
-const primaryContainerLight = '#d5e3ff';
-const primaryContainerDark = '#004688';
-const secondaryContainerLight = '#ffd8e9';
-const secondaryContainerDark = '#772958';
-
 
 export default {
   overlay: 'rgba(0, 0, 0, 0.2)',
