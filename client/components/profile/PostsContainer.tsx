@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import { Text, View } from '@/components/Themed';
 import { useTheme } from '@react-navigation/native';
@@ -94,8 +94,8 @@ const PostsContainer = () => {
                                 ]}
                             >
                                 <View style={{ backgroundColor: 'transparent' }}>
-                                    <Text style={styles.postTitle}>
-                                    {post.title ? truncateText(post.title) : truncateText(post.content, 20)}
+                                    <Text style={styles.postTitle} numberOfLines={2}>
+                                        {post.title ? truncateText(post.title) : truncateText(post.content, 20)}
                                     </Text>
                                     <Text style={styles.postDate}>
                                         {formatDate(post.createdAt)} • {formatTime(post.createdAt)}

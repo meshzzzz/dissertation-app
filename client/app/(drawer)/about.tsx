@@ -1,6 +1,8 @@
 import { FlatList, StyleSheet, ScrollView, View } from 'react-native';
 import { Text } from '@/components/Themed';
 import { ExternalLink } from '@/components/ExternalLink';
+import { Redirect } from 'expo-router';
+import { useAuth } from '@/context/AuthContext';
 
 const rules = [
   {
@@ -25,7 +27,14 @@ const rules = [
   },
 ];
 
+
 export default function About() {
+    const { authState } = useAuth();
+
+    if (authState?.authenticated === false) {
+        return <Redirect href="/auth/login" />;
+    }
+    
     return (
         <ScrollView contentContainerStyle={styles.container}>
             <Text style={styles.title}>About QLink</Text>

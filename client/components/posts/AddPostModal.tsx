@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { 
-  Modal, 
-  TouchableOpacity, 
-  TextInput, 
-  StyleSheet, 
-  ActivityIndicator,
-  KeyboardAvoidingView, 
-  Platform, 
-  TouchableWithoutFeedback, 
-  Keyboard 
+    Modal, 
+    TouchableOpacity, 
+    TextInput, 
+    StyleSheet, 
+    ActivityIndicator,
+    KeyboardAvoidingView, 
+    Platform, 
+    TouchableWithoutFeedback, 
+    Keyboard 
 } from 'react-native';
 import { Text, View } from '@/components/Themed';
 import { Ionicons } from '@expo/vector-icons';

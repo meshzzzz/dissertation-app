@@ -23,7 +23,6 @@ export default function FormStep2() {
         <FormContainer title="Sign Up">
             <Text style={styles.formTitle}>My Academic Details</Text>
             
-            {/* !! currently free entry - could make this a dropdown if time later */}
             <AuthInput
                 placeholder="Course of Study"
                 value={form.courseOfStudy}

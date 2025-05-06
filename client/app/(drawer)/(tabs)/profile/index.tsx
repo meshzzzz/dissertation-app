@@ -32,7 +32,7 @@ export default function Profile() {
           campus: string;
           accomodation: string;
         };
-      }>({
+    }>({
         name: 'Loading...',
         program: '',
         aboutMe: '',
@@ -41,7 +41,7 @@ export default function Profile() {
           campus: '',
           accomodation: ''
         }
-      });
+    });
     const [loading, setLoading] = useState(true);
 
     async function getData() {

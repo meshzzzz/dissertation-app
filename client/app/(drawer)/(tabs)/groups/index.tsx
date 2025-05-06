@@ -164,14 +164,14 @@ export default function Groups() {
         <SafeAreaView style={styles.container}>
             <View style={styles.content}>
             
-                {/* Search Bar Component */}
+                {/* search bar component */}
                 <SearchBar 
                     placeholder="Search Groups.."
                     value={searchQuery}
                     onChangeText={setSearchQuery}
                 />
                 
-                {/* Tab Buttons & Manage Button (for superusers) */}
+                {/* tab buttons & manage button (for superusers) */}
                 <View style={styles.navigationContainer}>
                     <TabButtons 
                         options={tabOptions}
@@ -191,7 +191,7 @@ export default function Groups() {
                     )}
                 </View>
                 
-                {/* Groups Grid */}
+                {/* groups grid */}
                 {loading ? (
                     <View style={styles.centerContainer}>
                         <ActivityIndicator size="large" color={colors.primary} />

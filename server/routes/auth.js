@@ -104,8 +104,9 @@ router.post("/login", async(req, res) => {
         return res.send({status:"error", data: "Invalid email or password"})
     }
     
-    if (await bcrypt.compare(password, existingUser.password)) {
-        const token = jwt.sign({email: existingUser.email}, process.env.JWT_SECRET);
+    const passwordMatch = await bcrypt.compare(password, existingUser.password);
+    if (passwordMatch) {
+        const token = jwt.sign({ email: existingUser.email }, process.env.JWT_SECRET);
         const userData = {
             id: existingUser._id.toString(),
             email: existingUser.email,
@@ -116,16 +117,13 @@ router.post("/login", async(req, res) => {
             role: existingUser.role || 'user'
         };
 
-        if (res.status(201)) {
-            return res.send({
-                status:"ok", 
-                token: token,
-                user: userData
-            })
-        }
-        else {
-            return res.send({status:"error"})
-        }
+        return res.send({
+            status: "ok",
+            token: token,
+            user: userData
+        });
+    } else {
+        return res.send({ status: "error", data: "Invalid email or password" });
     }
 });
 

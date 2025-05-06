@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import {
-  SafeAreaView,
-  StyleSheet,
-  FlatList,
-  ActivityIndicator,
-  View,
-  TouchableOpacity,
-  Image,
-  Alert
+    SafeAreaView,
+    StyleSheet,
+    FlatList,
+    ActivityIndicator,
+    View,
+    TouchableOpacity,
+    Image,
+    Alert
 } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { Text } from '@/components/Themed';
@@ -33,31 +33,31 @@ export default function GroupMembersScreen() {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-    const fetchMembers = async () => {
-        if (!authState?.token) return;
+        const fetchMembers = async () => {
+            if (!authState?.token) return;
 
-        setLoading(true);
-        setError(null);
+            setLoading(true);
+            setError(null);
 
-        try {
-        const response = await axios.get(`${API_URL}/groups/${groupId}`, {
-            params: { token: authState.token }
-        });
+            try {
+                const response = await axios.get(`${API_URL}/groups/${groupId}`, {
+                    params: { token: authState.token }
+            });
 
-        if (response.data.status === 'ok') {
-            setMembers(response.data.data.members);
-        } else {
-            setError('Failed to fetch group members');
-        }
-        } catch (err) {
-        console.error('Error fetching group members:', err);
-        setError('Network error while fetching data');
-        } finally {
-        setLoading(false);
-        }
-    };
+            if (response.data.status === 'ok') {
+                setMembers(response.data.data.members);
+            } else {
+                setError('Failed to fetch group members');
+            }
+            } catch (err) {
+                console.error('Error fetching group members:', err);
+                setError('Network error while fetching data');
+            } finally {
+                setLoading(false);
+            }
+        };
 
-    fetchMembers();
+        fetchMembers();
     }, [groupId, authState]);
 
     const handleRemoveMember = async (memberId: string) => {

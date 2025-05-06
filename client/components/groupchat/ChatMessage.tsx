@@ -2,7 +2,6 @@ import React from 'react';
 import { StyleSheet, View, Text, Image } from 'react-native';
 import { useColorScheme } from '@/components/useColorScheme';
 import { DEFAULT_PFP } from '@/constants/DefaultImages';
-import Colors from '@/constants/Colors';
 
 interface ChatMessageProps {
     message: any;
@@ -11,7 +10,6 @@ interface ChatMessageProps {
 
 export default function ChatMessage({ message, isOwnMessage }: ChatMessageProps) {
     const colorScheme = useColorScheme();
-    const primaryColor = Colors[colorScheme ?? 'light'].primary;
 
     // format timestamp to readable time
     const formatTime = (timestamp: string) => {

@@ -1,5 +1,4 @@
-import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
-import { router } from 'expo-router';
+import { Text, StyleSheet, Alert } from 'react-native';
 import { FormContainer } from '@/components/auth/FormContainer';
 import { AuthInput } from '@/components/auth/AuthInput';
 import { AuthButton } from '@/components/auth/AuthButton';
@@ -10,9 +9,9 @@ export default function FormStep1() {
   
     const handleNext = () => {
         if (isStepValid(1)) {
-        setCurrentStep(2);
+            setCurrentStep(2);
         } else {
-        Alert.alert('Error', 'Please fill out all fields correctly.');
+            Alert.alert('Error', 'Please fill out all fields correctly.');
         }
     };
   

@@ -9,7 +9,7 @@ interface RoundedButtonProps {
     iconName?: string; 
     marginRight?: boolean;
     disabled?: boolean;
-    fullWidth?: boolean; // might use later for auth buttons??
+    fullWidth?: boolean;
 }
 
 const RoundedButton = ({ 

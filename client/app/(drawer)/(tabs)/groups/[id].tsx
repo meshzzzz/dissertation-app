@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { 
-  SafeAreaView, 
-  StyleSheet, 
-  ScrollView, 
-  ActivityIndicator, 
-  TouchableOpacity,
+    SafeAreaView, 
+    StyleSheet, 
+    ScrollView, 
+    ActivityIndicator, 
+    TouchableOpacity,
 } from 'react-native';
 import { Text, View } from '@/components/Themed';
 import { Stack, useLocalSearchParams, router } from 'expo-router';

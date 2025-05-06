@@ -45,7 +45,7 @@ const CommentContent = ({
                         {formatDistanceToNow(new Date(createdAt), { addSuffix: true })}
                     </Text>
                     
-                    {/* Delete button - only visible for author */}
+                    {/* delete button - only visible for author */}
                     {canDeleteContent(author.id) && (
                         <TouchableOpacity 
                             style={styles.deleteButton}
